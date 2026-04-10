@@ -1,1 +1,24 @@
 /* You can add global styles to this file, and also import other style files */
+
+@use "sass:color";
+
+$medipay-orange: #E67E22;
+$medipay-blue: #2C3E50;
+
+.btn-medipay {
+    background-color: $medipay-orange;
+    color: white;
+    border: none;
+    &:hover {
+        background-color: color.adjust($medipay-orange, $lightness: -10%);
+        color: white;
+    }
+}
+
+.text-medipay-blue {
+    color: $medipay-blue;
+}
+
+.bg-medipay-blue {
+    background-color: $medipay-blue;
+}
