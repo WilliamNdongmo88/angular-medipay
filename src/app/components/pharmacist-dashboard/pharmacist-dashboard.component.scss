@@ -1,0 +1,11 @@
+.extra-small { font-size: 0.75rem; }
+.qr-placeholder img {
+  border: 4px solid white;
+}
+.animate__fadeIn {
+  animation: fadeIn 0.5s;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

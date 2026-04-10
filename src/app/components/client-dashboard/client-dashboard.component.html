@@ -1,0 +1,77 @@
+<div class="container py-4">
+  <!-- Carte de Solde (Style Vitale/Santé) -->
+  <div class="card border-0 rounded-4 shadow-lg mb-4 overflow-hidden position-relative"
+       style="background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);">
+    <div class="card-body p-4 text-white position-relative" style="z-index: 2;">
+      <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+          <p class="text-white-50 small mb-0">Solde Disponible</p>
+          <h1 class="fw-bold mb-0 display-5">{{ currentBalance | number:'1.0-0' }} <small class="fs-4">FCFA</small></h1>
+        </div>
+        <img style="max-height: 40px; filter: brightness(0) invert(1);">
+      </div>
+      <div class="d-flex justify-content-between align-items-end mt-5">
+        <div>
+          <p class="mb-0 fw-bold">{{ clientName }}</p>
+          <p class="text-white-50 small mb-0">ID: #{{ clientId }}</p>
+        </div>
+        <button (click)="onLogout()" class="btn btn-link text-white-50 p-0 border-0"><i class="bi bi-box-arrow-right h4"></i></button>
+      </div>
+    </div>
+    <!-- Décoration en arrière-plan -->
+    <div class="position-absolute top-0 end-0 p-5 opacity-10" style="transform: translate(20%, -20%);">
+      <i class="bi bi-shield-plus display-1"></i>
+    </div>
+  </div>
+
+  <!-- Bouton d'action Scan -->
+  <div class="d-grid gap-2 mb-5">
+    <button (click)="isScanning = true" class="btn btn-medipay btn-lg py-3 rounded-4 shadow fw-bold">
+      <i class="bi bi-qr-code-scan me-2"></i> Scanner pour Payer
+    </button>
+  </div>
+
+  <!-- Zone de Scan (S'affiche seulement si isScanning est vrai) -->
+  @if (isScanning) {
+    <div class="scanner-overlay animate__animated animate__fadeIn">
+      <div class="scanner-container bg-black p-3 rounded-4 shadow-lg text-center">
+        <h5 class="text-white mb-3">Alignez le QR Code</h5>
+        <zxing-scanner (scanSuccess)="onScanSuccess($event)" [formats]="allowedFormats"></zxing-scanner>
+        <button (click)="isScanning = false" class="btn btn-danger mt-3 rounded-pill px-4">Annuler</button>
+      </div>
+    </div>
+  }
+
+  <!-- Historique des Soins -->
+  <div class="card border-0 shadow-sm rounded-4">
+    <div class="card-body p-4">
+      <h5 class="fw-bold text-medipay-blue mb-4"><i class="bi bi-clock-history me-2"></i> Historique des Soins</h5>
+      <div class="list-group list-group-flush">
+        @for (tx of history; track tx.id) {
+          <div class="list-group-item px-0 border-0 mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="d-flex align-items-center">
+                <div class="p-2 rounded-3 me-3"
+                     [ngClass]="tx.type === 'DEPOSIT' ? 'bg-success bg-opacity-10 text-success' : 'bg-primary bg-opacity-10 text-primary'">
+                  <i class="bi" [ngClass]="tx.type === 'DEPOSIT' ? 'bi-plus-circle' : 'bi-cart-plus'"></i>
+                </div>
+                <div>
+                  <p class="mb-0 fw-bold small">{{ tx.description }}</p>
+                  <p class="text-muted extra-small mb-0">{{ tx.timestamp | date:'dd MMM yyyy, HH:mm' }}</p>
+                </div>
+              </div>
+              <span class="fw-bold" [ngClass]="tx.type === 'DEPOSIT' ? 'text-success' : 'text-danger'">
+                {{ tx.type === 'DEPOSIT' ? '+' : '-' }}{{ tx.amount | number:'1.0-0' }}
+              </span>
+            </div>
+          </div>
+        } @empty {
+          <div class="text-center py-5">
+            <i class="bi bi-receipt text-muted display-4 opacity-25"></i>
+            <p class="text-muted mt-2">Aucune transaction pour le moment</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

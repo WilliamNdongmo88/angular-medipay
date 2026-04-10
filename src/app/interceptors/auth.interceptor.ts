@@ -6,6 +6,7 @@ import { catchError, switchMap, throwError } from 'rxjs';
 export const authInterceptor: HttpInterceptorFn = (req, next ) => {
   const authService = inject(AuthService);
   const token = authService.getAccessToken();
+  console.log('Récupération du token:', token);
 
   let authReq = req;
   if (token) {

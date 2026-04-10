@@ -3,22 +3,30 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap, catchError, throwError, of } from 'rxjs';
 import { AuthResponse, User } from '../models/user.model';
 import { jwtDecode } from 'jwt-decode';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 } )
 export class AuthService {
   private http = inject(HttpClient );
-  private readonly API_URL = 'http://localhost:8008/api/auth';
+  private apiUrl: string | undefined;
+  private isProd = environment.production;
 
   currentUser = signal<User | null>(null );
 
   constructor() {
+    // Définir l'URL de l'API selon l'environnement
+    if (this.isProd) {
+      this.apiUrl = environment.apiUrlProd + '/auth';
+    } else {
+      this.apiUrl = environment.apiUrlDev +'/auth';
+    }
     this.loadUserFromToken();
   }
 
   login(credentials: any): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API_URL}/signin`, credentials ).pipe(
+    return this.http.post<AuthResponse>(`${this.apiUrl}/signin`, credentials ).pipe(
       tap(response => {
         this.saveTokens(response.accessToken, response.refreshToken);
         this.loadUserFromToken();
@@ -28,7 +36,7 @@ export class AuthService {
 
   refreshToken(): Observable<AuthResponse> {
     const refreshToken = localStorage.getItem('medipay_refresh_token');
-    return this.http.post<AuthResponse>(`${this.API_URL}/refresh-token`, { refreshToken } ).pipe(
+    return this.http.post<AuthResponse>(`${this.apiUrl}/refresh-token`, { refreshToken } ).pipe(
       tap(response => this.saveTokens(response.accessToken, response.refreshToken)),
       catchError(err => {
         this.logout();
@@ -65,5 +73,7 @@ export class AuthService {
     }
   }
 
-  getAccessToken() { return localStorage.getItem('medipay_access_token'); }
+  getAccessToken() {
+    return localStorage.getItem('medipay_access_token');
+  }
 }
