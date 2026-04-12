@@ -7,6 +7,7 @@ import { TransactionHistoryComponent } from './components/admin-dashboard/transa
 import { UserManagementComponent } from './components/admin-dashboard/users/user-management.component';
 import { authGuard } from './Guard/auth.guard';
 import { RegisterComponent } from './components/register/register.component';
+import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -30,7 +31,9 @@ export const routes: Routes = [
     canActivate: [authGuard],
     data: { role: 'ROLE_ADMIN' }
   },
-    { path: 'register', component: RegisterComponent },
+  { path: 'register', component: RegisterComponent },
+  { path: 'forgot-password', component: ForgotPasswordComponent },
+
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: '**', redirectTo: 'login' }
   // Les autres routes seront ajoutées ici (Admin, Client, Pharmacist)
