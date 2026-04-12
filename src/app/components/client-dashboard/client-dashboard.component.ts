@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
@@ -25,7 +25,7 @@ export class ClientDashboardComponent implements OnInit {
   clientId = 0;
   currentBalance = 0;
   isScanning = false;
-  history: any[] = [];
+  history = signal<any[]>([]);
   allowedFormats = [ BarcodeFormat.QR_CODE ];
 
   constructor() {
@@ -47,12 +47,19 @@ export class ClientDashboardComponent implements OnInit {
   }
 
   loadData() {
-    this.http.get<any[]>(`${this.apiUrl}/payment/history` ).subscribe(data => {
-      this.history = data;
-      // Calculer le solde : Somme(DEPOSIT) - Somme(PAYMENT)
-      this.currentBalance = data.reduce((acc, tx) => {
-        return tx.type === 'DEPOSIT' ? acc + tx.amount : acc - tx.amount;
-      }, 0);
+    this.http.get<any[]>(`${this.apiUrl}/payment/history`)
+    .subscribe({
+      next: (data) => {
+        this.history.set(data);
+        // Calculer le solde : Somme(DEPOSIT) - Somme(PAYMENT)
+        this.currentBalance = data.reduce((acc, tx) => {
+          return tx.type === 'DEPOSIT' ? acc + tx.amount : acc - tx.amount;
+        }, 0);
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement de l\'historique:', error);
+      }
+
     });
   }
 

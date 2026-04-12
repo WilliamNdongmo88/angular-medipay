@@ -1,0 +1,216 @@
+<div class="container-fluid p-0">
+  <div class="row g-0">
+    <!-- Sidebar -->
+    <aside class="sidebar col-md-2 d-none d-md-block bg-medipay-blue min-vh-100 p-4 shadow">
+      <div class="text-center mb-5">
+        <img src="img/logo_v4.png" alt="Logo" style="max-height: 50px;" class="mb-2 img_style">
+        <h5 class="text-white fw-bold">MediPay Admin</h5>
+      </div>
+      <ul class="nav flex-column gap-3">
+        <li class="nav-item">
+          <a class="nav-link text-white opacity-75" href="#" routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-white opacity-75" href="#" routerLink="/admin/users" routerLinkActive="active"><i class="bi bi-people me-2"></i> Utilisateurs</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-white active bg-white bg-opacity-10 rounded" href="#" routerLink="/admin/transactions" routerLinkActive="active"><i class="bi bi-receipt me-2"></i> Transactions</a>
+        </li>
+        <li class="nav-item mt-5">
+          <button (click)="onLogout()" class="btn btn-outline-light w-100 border-0 text-start"><i class="bi bi-box-arrow-right me-2"></i> Déconnexion</button>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content col-md-10 ms-sm-auto px-md-4 py-4 bg-light">
+      <header class="main-header d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+        <h1 class="h2 text-medipay-blue fw-bold">Historique des Transactions</h1>
+        <div class="badge bg-white text-dark shadow-sm p-2 px-3 rounded-pill">
+          <i class="bi bi-person-circle me-2 text-primary"></i> {{ adminName }}
+        </div>
+      </header>
+
+      <div class="content-body">
+      <!-- Cartes de Statistiques -->
+        <div class="row mb-4">
+          <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-3">
+              <div class="d-flex align-items-center">
+                <div class="bg-success bg-opacity-10 p-3 rounded-3 me-3"><i class="bi bi-cash-coin text-success h4 mb-0"></i></div>
+                <div><p class="text-muted small mb-0">Montant Total</p><h4 class="fw-bold mb-0">{{ totalAmount | number:'1.0-0' }} XAF</h4></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-3">
+              <div class="d-flex align-items-center">
+                <div class="bg-primary bg-opacity-10 p-3 rounded-3 me-3"><i class="bi bi-arrow-down-circle text-primary h4 mb-0"></i></div>
+                <div><p class="text-muted small mb-0">Dépôts</p><h4 class="fw-bold mb-0">{{ depositCount }}</h4></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-3">
+              <div class="d-flex align-items-center">
+                <div class="bg-warning bg-opacity-10 p-3 rounded-3 me-3"><i class="bi bi-arrow-up-circle text-warning h4 mb-0"></i></div>
+                <div><p class="text-muted small mb-0">Paiements</p><h4 class="fw-bold mb-0">{{ paymentCount }}</h4></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filtres et Recherche -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4 p-4">
+          <h5 class="card-title fw-bold text-medipay-blue mb-4">Filtres</h5>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Recherche (ID ou Description)</label>
+              <div class="input-group">
+                <span class="input-group-text bg-white border-medipay-blue"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control border-medipay-blue" placeholder="Rechercher..."
+                      [(ngModel)]="searchTerm" (keyup)="onSearch()">
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Type de Transaction</label>
+              <div class="btn-group w-100" role="group">
+                <button type="button" class="btn btn-sm btn-outline-medipay" [class.active]="selectedType === ''"
+                        (click)="onFilterByType('')">Tous</button>
+                <button type="button" class="btn btn-sm btn-outline-medipay" [class.active]="selectedType === 'DEPOSIT'"
+                        (click)="onFilterByType('DEPOSIT')">Dépôts</button>
+                <button type="button" class="btn btn-sm btn-outline-medipay" [class.active]="selectedType === 'PAYMENT'"
+                        (click)="onFilterByType('PAYMENT')">Paiements</button>
+                <button type="button" class="btn btn-sm btn-outline-medipay" [class.active]="selectedType === 'RESET'"
+                        (click)="onFilterByType('RESET')">Réinit.</button>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Statut</label>
+              <div class="btn-group w-100" role="group">
+                <button type="button" class="btn btn-sm btn-outline-medipay" [class.active]="selectedStatus === ''"
+                        (click)="onFilterByStatus('')">Tous</button>
+                <button type="button" class="btn btn-sm btn-outline-medipay" [class.active]="selectedStatus === 'COMPLETED'"
+                        (click)="onFilterByStatus('COMPLETED')">Complétées</button>
+                <button type="button" class="btn btn-sm btn-outline-medipay" [class.active]="selectedStatus === 'PENDING'"
+                        (click)="onFilterByStatus('PENDING')">En attente</button>
+                <button type="button" class="btn btn-sm btn-outline-medipay" [class.active]="selectedStatus === 'FAILED'"
+                        (click)="onFilterByStatus('FAILED')">Échouées</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-3">
+              <label class="form-label small fw-bold">Date de début</label>
+              <input type="date" class="form-control border-medipay-blue" [(ngModel)]="startDate" (change)="onDateFilterChange()">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small fw-bold">Date de fin</label>
+              <input type="date" class="form-control border-medipay-blue" [(ngModel)]="endDate" (change)="onDateFilterChange()">
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+              <button class="btn btn-medipay w-100" (click)="exportToCSV()">
+                <i class="bi bi-download me-2"></i> Exporter en CSV
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tableau des Transactions -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+          <div class="card-body p-4">
+            <h5 class="card-title fw-bold text-medipay-blue mb-4">
+              Liste des Transactions
+              <span class="spinner-grow spinner-grow-sm text-success ms-2"
+                    *ngIf="isLoading" style="--bs-spinner-width: 8px; --bs-spinner-height: 8px;"
+                    title="Mise à jour automatique active"></span>
+            </h5>
+
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th class="small">Type</th>
+                    <!-- <th class="small">Wallet Émetteur</th>
+                    <th class="small">Wallet Destinataire</th> -->
+                    <th class="small">Montant</th>
+                    <th class="small">Statut</th>
+                    <th class="small">Name</th>
+                    <th class="small">Date</th>
+                    <th class="small">Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @if (filteredTransactions().length > 0) {
+                    @for (tx of filteredTransactions(); track tx.id) {
+                      <tr>
+                        <td>
+                          <span class="badge text-white" [ngClass]="getTypeBadgeClass(tx.type)">
+                            {{ getTypeLabel(tx.type) }}
+                          </span>
+                        </td>
+                        <!-- <td class="small">{{ tx.senderBalance }}</td>
+                        <td class="small">{{ tx.receiverBalance }}</td> -->
+                        <td class="small fw-bold text-end">{{ tx.amount | number:'1.0-0' }} XAF</td>
+                        <td>
+                          <span class="badge text-white" [ngClass]="getStatusBadgeClass(tx.status)">
+                            {{ getStatusLabel(tx.status) }}
+                          </span>
+                        </td>
+                        <td class="small fw-bold">{{ tx.receiverName }}</td>
+                        <td class="small">{{ tx.timestamp | date:'short' }}</td>
+                        <td class="small text-muted">{{ tx.description || '-' }}</td>
+                      </tr>
+                    }
+                  } @else {
+                    <tr>
+                      <td colspan="8" class="text-center text-muted py-4">
+                        @if (isLoading) {
+                          <span>Chargement des transactions...</span>
+                        } @else {
+                          <span>Aucune transaction trouvée</span>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Page navigation" class="mt-4">
+              <ul class="pagination justify-content-center">
+                <li class="page-item" [class.disabled]="currentPage === 1">
+                  <button class="page-link" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+                    Précédent
+                  </button>
+                </li>
+                @for (page of [].constructor(getTotalPages()); let i = $index; track i) {
+                  <li class="page-item" [class.active]="currentPage === i + 1">
+                    <button class="page-link" (click)="goToPage(i + 1)">{{ i + 1 }}</button>
+                  </li>
+                }
+                <li class="page-item" [class.disabled]="currentPage === getTotalPages()">
+                  <button class="page-link" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === getTotalPages()">
+                    Suivant
+                  </button>
+                </li>
+              </ul>
+            </nav>
+
+            <!-- Résumé -->
+            <div class="text-muted small mt-3">
+              Affichage de {{ (currentPage - 1) * itemsPerPage + 1 }} à {{ Math.min(currentPage * itemsPerPage, transactions.length) }}
+              sur {{ totalTransactions }} transactions au total
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

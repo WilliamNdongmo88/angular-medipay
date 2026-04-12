@@ -1,0 +1,47 @@
+/* Sidebar Fixe */
+.sidebar {
+  flex-shrink: 0; /* Empêche la sidebar de rétrécir */
+  z-index: 1000;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Contenu Principal Défilable */
+.main-content {
+  flex-grow: 1; /* Prend tout l'espace restant */
+  height: 100vh;
+  overflow-y: auto; /* Active le scroll uniquement ici */
+  padding: 2rem;
+  display: flex;
+  flex-direction: column; /* Organise Header et Body l'un au-dessus de l'autre */
+  overflow: hidden; /* Empêche le scroll sur le conteneur principal */
+  background-color: #f8f9fa;
+}
+
+/* Header Fixe en haut du Main Content */
+.main-header {
+  height: 80px; /* Hauteur fixe pour le header */
+  background-color: white;
+  padding: 0 2rem;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  z-index: 900;
+  flex-shrink: 0; /* Empêche le header de rétrécir */
+}
+
+/* Zone de contenu qui défile (Scrollable) */
+.content-body {
+  flex-grow: 1; /* Prend tout l'espace restant sous le header */
+  overflow-y: auto; /* Active le scroll uniquement ici */
+  padding: 2rem;
+  scroll-behavior: smooth;
+}
+
+.img_style{
+  max-height: 50px;
+  border-radius: 60px;
+  border-top-left-radius: 40px;
+  border-top-right-radius: 40px;
+}

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit , signal} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -21,11 +21,11 @@ export class PharmacistDashboardComponent implements OnInit {
   private isProd = environment.production;
 
   pharmacistName = '';
-  currentBalance = 0;
+  currentBalance = signal<number>(0);
   paymentAmount: number | null = null;
   qrCodeValue = '';
   isGenerating = false;
-  recentSales: any[] = [];
+  recentSales = signal<any[]>([]);
 
   constructor() {
     // Définir l'URL de l'API selon l'environnement
@@ -45,10 +45,24 @@ export class PharmacistDashboardComponent implements OnInit {
 
   loadData() {
     // 1. Charger l'historique (et par extension le solde)
-    this.http.get<any[]>(`${this.apiUrl}/payment/history` ).subscribe(data => {
-      this.recentSales = data.filter(tx => tx.type === 'PAYMENT').slice(0, 8);
-      // Calculer le solde actuel (ou via un endpoint dédié si disponible)
-      // Pour cet exemple, on suppose que le solde est géré côté backend
+    this.http.get<any[]>(`${this.apiUrl}/payment/history`)
+    .subscribe({
+      next: (data) => {
+        this.recentSales.set(data.filter(tx => tx.type === 'PAYMENT').slice(0, 8));
+        console.log('Historique des ventes:', this.recentSales());
+        this.currentBalance.set(
+          data.reduce((acc, tx) =>
+            acc + (tx.type === 'PAYMENT' ? Number(tx.amount) : 0), 0
+          )
+        );
+        console.log('Solde actuel:', this.currentBalance());
+        // Calculer le solde actuel (ou via un endpoint dédié si disponible)
+        // Pour cet exemple, on suppose que le solde est géré côté backend
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement des données:', error);
+      }
+
     });
   }
 
@@ -58,6 +72,7 @@ export class PharmacistDashboardComponent implements OnInit {
 
     this.http.post<any>(`${this.apiUrl}/qrcode/generate`, request ).subscribe({
       next: (res) => {
+        console.log('QR Code généré:', res.qrCodeValue);
         this.qrCodeValue = res.qrCodeValue;
         this.isGenerating = false;
       },

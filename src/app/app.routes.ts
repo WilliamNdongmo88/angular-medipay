@@ -1,15 +1,35 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './components/login/login.component';
-import { AdminDashboardComponent } from './components/admin-dashboard/admin-dashboard.component';
+import { AdminDashboardComponent } from './components/admin-dashboard/admin/admin-dashboard.component';
 import { PharmacistDashboardComponent } from './components/pharmacist-dashboard/pharmacist-dashboard.component';
 import { ClientDashboardComponent } from './components/client-dashboard/client-dashboard.component';
+import { TransactionHistoryComponent } from './components/admin-dashboard/transaction/transaction-history.component';
+import { UserManagementComponent } from './components/admin-dashboard/users/user-management.component';
+import { authGuard } from './Guard/auth.guard';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
-  { path: 'admin', component: AdminDashboardComponent },
   { path: 'pharmacist', component: PharmacistDashboardComponent },
   { path: 'client', component: ClientDashboardComponent },
+    {
+    path: 'admin',
+    component: AdminDashboardComponent,
+    canActivate: [authGuard], // Protection active
+    data: { role: 'ROLE_ADMIN' }   // On précise le rôle requis
+  },
+  {
+    path: 'admin/users',
+    component: UserManagementComponent,
+    //canActivate: [authGuard],
+    data: { role: 'ROLE_ADMIN' }
+  },
+  {
+    path: 'admin/transactions',
+    component: TransactionHistoryComponent,
+    canActivate: [authGuard],
+    data: { role: 'ROLE_ADMIN' }
+  },
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: '**', redirectTo: 'login' }
   // Les autres routes seront ajoutées ici (Admin, Client, Pharmacist)
 ];

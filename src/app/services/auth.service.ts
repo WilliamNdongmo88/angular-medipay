@@ -36,7 +36,7 @@ export class AuthService {
 
   refreshToken(): Observable<AuthResponse> {
     const refreshToken = localStorage.getItem('medipay_refresh_token');
-    return this.http.post<AuthResponse>(`${this.apiUrl}/refresh-token`, { refreshToken } ).pipe(
+    return this.http.post<AuthResponse>(`${this.apiUrl}/refresh`, { refreshToken } ).pipe(
       tap(response => this.saveTokens(response.accessToken, response.refreshToken)),
       catchError(err => {
         this.logout();
@@ -56,6 +56,10 @@ export class AuthService {
     this.currentUser.set(null);
   }
 
+  isLoggedIn(): boolean {
+    return !!localStorage.getItem('medipay_access_token');
+  }
+
   private loadUserFromToken() {
     const token = localStorage.getItem('medipay_access_token');
     if (token) {
@@ -65,7 +69,7 @@ export class AuthService {
           id: decoded.id,
           username: decoded.sub,
           email: decoded.email,
-          role: decoded.role[0].authority
+          role: decoded.role[0].authority || decoded.role // Selon la structure du token
         });
       } catch (e) {
         this.logout();
