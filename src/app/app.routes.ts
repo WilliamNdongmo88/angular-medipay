@@ -6,6 +6,7 @@ import { ClientDashboardComponent } from './components/client-dashboard/client-d
 import { TransactionHistoryComponent } from './components/admin-dashboard/transaction/transaction-history.component';
 import { UserManagementComponent } from './components/admin-dashboard/users/user-management.component';
 import { authGuard } from './Guard/auth.guard';
+import { RegisterComponent } from './components/register/register.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -29,6 +30,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
     data: { role: 'ROLE_ADMIN' }
   },
+    { path: 'register', component: RegisterComponent },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: '**', redirectTo: 'login' }
   // Les autres routes seront ajoutées ici (Admin, Client, Pharmacist)

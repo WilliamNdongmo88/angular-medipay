@@ -47,7 +47,7 @@ export class TransactionHistoryComponent implements OnInit, OnDestroy {
 
   // Pagination
   currentPage = 1;
-  itemsPerPage = 15;
+  itemsPerPage = 10;
   totalTransactions = 0;
 
   // Statistiques

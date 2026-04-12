@@ -1,51 +1,60 @@
-<div class="login-container d-flex align-items-center justify-content-center">
-  <div class="card shadow-lg border-0" style="max-width: 450px; width: 100%;">
-    <div class="card-body p-5">
-      <!-- Logo et Titre -->
-      <div class="text-center mb-4">
-        <img src="img/logo_v2.png" alt="MediPay Logo" class="mb-3 logo-size">
-        <!-- <h2 class="fw-bold text-medipay-blue mt-text">MediPay</h2> -->
-        <p class="text-muted small">Système de Paiement Santé Sécurisé</p>
-      </div>
+<div class="min-vh-100 d-flex align-items-center justify-content-center bg-light py-5">
+  <div class="card border-0 shadow-lg rounded-4 overflow-hidden" style="max-width: 450px; width: 90%;">
 
-      <!-- Formulaire -->
+    <!-- Header de la carte -->
+    <div class="bg-medipay-blue p-4 text-center text-white">
+      <img src="img/logo_v2.png" alt="MediPay" class="mb-3 logo-size">
+      <h4 class="fw-bold mb-0">Connexion</h4>
+      <p class="small opacity-75 mb-0">Accédez à votre espace santé sécurisé</p>
+    </div>
+
+    <div class="card-body p-4 p-md-5">
+      @if (errorMessage) {
+        <div class="alert alert-danger small border-0 shadow-sm mb-4 animate__animated animate__shakeX">
+          <i class="bi bi-exclamation-circle-fill me-2"></i> {{ errorMessage }}
+        </div>
+      }
+
       <form (submit)="onLogin($event)">
+        <!-- Identifiant -->
         <div class="mb-3">
-          <label class="form-label text-medipay-blue fw-semibold">Nom d'utilisateur</label>
+          <label class="form-label small fw-bold">Nom d'utilisateur</label>
           <div class="input-group">
-            <span class="input-group-text bg-light border-end-0"><i class="bi bi-person"></i></span>
-            <input type="text" class="form-control bg-light border-start-0"
-                   [(ngModel)]="username" name="username" placeholder="Ex: admin" required>
+            <span class="input-group-text bg-white border-end-0"><i class="bi bi-person text-muted"></i></span>
+            <input type="text" class="form-control border-start-0" [(ngModel)]="username" name="username" placeholder="Ex: soh_maturin" required>
           </div>
         </div>
 
-        <div class="mb-4">
-          <label class="form-label text-medipay-blue fw-semibold">Mot de passe</label>
+        <!-- Mot de passe -->
+        <div class="mb-2">
+          <label class="form-label small fw-bold">Mot de passe</label>
           <div class="input-group">
-            <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock"></i></span>
-            <input type="password" class="form-control bg-light border-start-0"
-                   [(ngModel)]="password" name="password" placeholder="••••••••" required>
+            <span class="input-group-text bg-white border-end-0"><i class="bi bi-lock text-muted"></i></span>
+            <input type="password" class="form-control border-start-0" [(ngModel)]="password" name="password" placeholder="••••••••" required>
           </div>
         </div>
 
-        @if (errorMessage) {
-          <div class="alert alert-danger small py-2 mb-3">
-            {{ errorMessage }}
-          </div>
-        }
+        <!-- MOT DE PASSE OUBLIÉ -->
+        <div class="text-end mb-4">
+          <a routerLink="/forgot-password" class="text-medipay-blue small text-decoration-none fw-bold opacity-75 hover-opacity-100">
+            Mot de passe oublié ?
+          </a>
+        </div>
 
-        <button type="submit" class="btn btn-medipay w-100 py-2 fw-bold shadow-sm" [disabled]="isLoading">
-          @if (isLoading) {
-            <span class="spinner-border spinner-border-sm me-2"></span> Connexion...
-          } @else {
-            Se connecter
-          }
+        <button type="submit" class="btn btn-medipay w-100 fw-bold py-3 rounded-3 shadow-sm mb-4" [disabled]="isLoading()">
+          @if (isLoading()) { <span class="spinner-border spinner-border-sm me-2"></span> } Se connecter
         </button>
-      </form>
 
-      <div class="text-center mt-4">
-        <a href="#" class="text-decoration-none small text-medipay-blue opacity-75">Mot de passe oublié ?</a>
-      </div>
+        <!-- INSCRIPTION -->
+        <div class="text-center pt-3 border-top">
+          <p class="small text-muted mb-0">
+            Nouveau sur MediPay ?
+            <a routerLink="/register" class="text-medipay-blue fw-bold text-decoration-none ms-1">
+              Créer un compte gratuitement
+            </a>
+          </p>
+        </div>
+      </form>
     </div>
   </div>
 </div>

@@ -1,0 +1,81 @@
+<div class="min-vh-100 d-flex align-items-center justify-content-center bg-light py-5">
+  <div class="card border-0 shadow-lg rounded-4 overflow-hidden" style="max-width: 500px; width: 90%;">
+    <div class="bg-medipay-blue p-4 text-center text-white">
+      <img src="img/logo_v2.png" alt="MediPay" class="mb-3 logo-size">
+      <h3 class="fw-bold mb-0">Rejoindre MediPay</h3>
+      <p class="small opacity-75 mb-0">Créez votre compte en quelques secondes</p>
+    </div>
+
+    <div class="card-body p-4 p-md-5">
+      @if (errorMessage) {
+        <div class="alert alert-danger small border-0 shadow-sm mb-4 animate__animated animate__shakeX">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ errorMessage }}
+        </div>
+      }
+      @if (successMessage) {
+        <div class="alert alert-success small border-0 shadow-sm mb-4 animate__animated animate__shakeX">
+          <i class="bi bi-check-circle-fill me-2"></i> {{ successMessage }}
+        </div>
+      }
+
+      <form (submit)="onRegister()">
+        <!-- Nom d'utilisateur -->
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Nom d'utilisateur</label>
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0"><i class="bi bi-person text-muted"></i></span>
+            <input type="text" class="form-control border-start-0" [(ngModel)]="registerData.username" name="username" placeholder="Ex: soh_maturin" required>
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Adresse Email</label>
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0"><i class="bi bi-envelope text-muted"></i></span>
+            <input type="email" class="form-control border-start-0" [(ngModel)]="registerData.email" name="email" placeholder="soh@example.com" required>
+          </div>
+        </div>
+
+        <!-- Choix du Rôle -->
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Je suis un :</label>
+          <div class="d-flex gap-3">
+            <div class="form-check flex-fill p-0">
+              <input type="radio" class="btn-check" name="role" id="rolePatient" value="ROLE_CLIENT" [(ngModel)]="registerData.role" checked>
+              <label class="btn btn-outline-primary w-100 py-2" for="rolePatient">
+                <i class="bi bi-person-heart me-2"></i> Patient
+              </label>
+            </div>
+            <div class="form-check flex-fill p-0">
+              <input type="radio" class="btn-check" name="role" id="rolePharma" value="ROLE_PHARMACIST" [(ngModel)]="registerData.role">
+              <label class="btn btn-outline-success w-100 py-2" for="rolePharma">
+                <i class="bi bi-plus-circle me-2"></i> Pharmacien
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mot de passe -->
+        <div class="row mb-4">
+          <div class="col-md-6 mb-3 mb-md-0">
+            <label class="form-label small fw-bold">Mot de passe</label>
+            <input type="password" class="form-control" [(ngModel)]="registerData.password" name="password" placeholder="••••••••" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-bold">Confirmation</label>
+            <input type="password" class="form-control" [(ngModel)]="registerData.confirmPassword" name="confirmPassword" placeholder="••••••••" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-medipay w-100 fw-bold py-3 rounded-3 shadow-sm mb-3" [disabled]="isSubmitting()">
+          @if (isSubmitting()) { <span class="spinner-border spinner-border-sm me-2"></span> } Créer mon compte
+        </button>
+
+        <div class="text-center">
+          <p class="small text-muted mb-0">Déjà inscrit ? <a routerLink="/login" class="text-medipay-blue fw-bold text-decoration-none">Connectez-vous ici</a></p>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -76,17 +76,67 @@
               <div class="card-body p-4">
                 <h5 class="card-title fw-bold text-medipay-blue mb-4">Créditer un Compte Patient</h5>
                 <form (submit)="onCredit($event)">
-                  <div class="mb-3">
-                    <label class="form-label small fw-bold">ID de l'utilisateur (ou recherche)</label>
-                    <input type="number" class="form-control" [(ngModel)]="creditData.userId" name="userId" placeholder="Ex: 2" required>
+                <!-- Champ de Recherche avec Suggestions -->
+                <div class="mb-3 position-relative">
+                  <label class="form-label small fw-bold">Rechercher un Patient (Nom ou Email)</label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" class="form-control border-start-0"
+                          [(ngModel)]="searchTerm" name="searchTerm"
+                          (input)="onSearchChange()"
+                          placeholder="Saisissez un nom..." autocomplete="off">
                   </div>
-                  <div class="mb-4">
-                    <label class="form-label small fw-bold">Montant à créditer (FCFA)</label>
-                    <input type="number" class="form-control" [(ngModel)]="creditData.amount" name="amount" placeholder="Ex: 5000" required>
+
+                  <!-- Liste des suggestions (Dropdown personnalisé) -->
+                  @if (filteredPatients.length > 0) {
+                    <ul class="list-group position-absolute w-100 shadow-sm z-3 mt-1">
+                      @for (p of filteredPatients; track p.id) {
+                        <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center cursor-pointer"
+                            (click)="selectPatient(p)" style="cursor: pointer;">
+                          <div>
+                            <div class="fw-bold small">{{ p.username }}</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">{{ p.email }}</div>
+                          </div>
+                          <span class="badge bg-light text-primary border">ID: {{ p.id }}</span>
+                        </li>
+                      }
+                    </ul>
+                  }
+                </div>
+
+                <!-- Affichage du Patient Sélectionné et Champ Montant -->
+                @if (selectedPatient) {
+                  <div class="p-3 bg-light rounded-3 mb-3 border-start border-primary border-4 animate__animated animate__fadeIn">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div>
+                        <p class="mb-0 small text-muted">Patient sélectionné :</p>
+                        <h6 class="mb-0 fw-bold text-primary">{{ selectedPatient.username }} (ID: {{ selectedPatient.id }})</h6>
+                      </div>
+                      <button type="button" class="btn-close small" (click)="resetForm()"></button>
+                    </div>
                   </div>
-                  <button type="submit" class="btn btn-medipay w-100 fw-bold py-2 rounded-3 shadow-sm" [disabled]="isProcessing">
-                    @if (isProcessing) { <span class="spinner-border spinner-border-sm me-2"></span> } Valider le crédit
+
+                  <div class="mb-4 animate__animated animate__fadeInUp">
+                    <label class="form-label small fw-bold">Montant à créditer (XAF)</label>
+                    <div class="input-group">
+                      <input type="number" class="form-control form-control-lg fw-bold text-success"
+                            [(ngModel)]="creditData.amount" name="amount"
+                            placeholder="Ex: 5000" required>
+                      <span class="input-group-text bg-white fw-bold">XAF</span>
+                    </div>
+                  </div>
+
+                  <button type="submit" class="btn btn-medipay w-100 fw-bold py-3 rounded-3 shadow-sm"
+                          [disabled]="isProcessing() || !creditData.amount">
+                    @if (isProcessing()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                    Confirmer le crédit de {{ creditData.amount | number }} XAF
                   </button>
+                } @else {
+                  <div class="text-center py-4 text-muted border rounded-3 border-dashed">
+                    <i class="bi bi-person-plus h3 d-block mb-2"></i>
+                    <p class="small mb-0">Veuillez sélectionner un patient pour continuer</p>
+                  </div>
+                }
                 </form>
               </div>
             </div>
