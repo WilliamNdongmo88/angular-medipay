@@ -1,4 +1,15 @@
-<div class="container py-4">
+ <!-- Navbar Patient -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-medipay-blue shadow-sm py-3">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="#">MediPay <span class="badge bg-warning text-dark ms-2 small">Patient</span></a>
+    <div class="d-flex align-items-center gap-3">
+      <span class="text-white small d-none d-md-inline">Bienvenue, <strong>{{ clientName }}</strong></span>
+      <button (click)="onLogout()" class="btn btn-sm btn-outline-light border-0"><i class="bi bi-box-arrow-right"></i></button>
+    </div>
+  </div>
+</nav>
+<div class="container py-4 min-vh-100 bg-light">
+
   <!-- Carte de Solde (Style Vitale/Santé) -->
   <div class="card border-0 rounded-4 shadow-lg mb-4 overflow-hidden position-relative"
        style="background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);">
