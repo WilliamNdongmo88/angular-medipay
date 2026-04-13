@@ -286,11 +286,9 @@ export class TransactionHistoryComponent implements OnInit, OnDestroy {
   }
 
   private convertToCSV(data: Transaction[]): string {
-    const headers = ['ID', 'Wallet Émetteur', 'Wallet Destinataire', 'Montant', 'Type', 'Statut', 'Date', 'Description'];
+    const headers = ['Type', 'Montant', 'Statut', 'Name', 'Date', 'Description'];
     const rows = data.map(tx => [
-      tx.id,
-      tx.senderWalletId,
-      tx.receiverWalletId,
+      tx.type,
       tx.amount,
       this.getTypeLabel(tx.type),
       this.getStatusLabel(tx.status),
