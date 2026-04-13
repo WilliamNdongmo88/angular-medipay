@@ -1,12 +1,13 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, effect  } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLinkActive, RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { AdminService } from '../../../services/admin.service';
 import { finalize } from 'rxjs';
+import { WebSocketService } from '../../../services/websocket.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -19,8 +20,7 @@ export class AdminDashboardComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private http = inject(HttpClient );
-  private apiUrl: string | undefined;
-  private isProd = environment.production;
+  private wsService = inject(WebSocketService);
 
   // Données pour la recherche
   allUsers: any[] = []; // Liste complète des patients récupérée au chargement
@@ -42,6 +42,9 @@ export class AdminDashboardComponent implements OnInit {
   totalUsers = signal<number>(0);
   pollingInterval: any;
 
+  private apiUrl: string | undefined;
+  private isProd = environment.production;
+
   constructor(private adminService: AdminService) {
     // Définir l'URL de l'API selon l'environnement
     if (this.isProd) {
@@ -49,16 +52,26 @@ export class AdminDashboardComponent implements OnInit {
     } else {
       this.apiUrl = environment.apiUrlDev;
     }
+
+    //Démarrer la connexion WebSocket pour les mises à jour en temps réel
+    // this.wsService.connect();
+    // effect(() => {
+    //   const data = this.wsService.transactions();
+    //   console.log('🔥 Temps réel:', data);
+    //   if (data.length > 0) {
+    //     this.allUsers = data.slice(0, 5);
+    //   }
+    // });
   }
 
   ngOnInit() {
-    console.log("INIT OK");
     this.adminName = this.authService.currentUser()?.username || 'Admin';
     this.loadRecentTransactions();
     this.loadPatients();
 
     // Polling toutes les 15 secondes pour les mises à jour
     this.pollingInterval = setInterval(() => {
+      console.log("⏱️ Polling pour les mises à jour...");
       this.loadPatients();
     }, 15000);
   }
@@ -67,6 +80,7 @@ export class AdminDashboardComponent implements OnInit {
     if (this.pollingInterval) {
       clearInterval(this.pollingInterval);
     }
+    //this.wsService.disconnect();
   }
 
 

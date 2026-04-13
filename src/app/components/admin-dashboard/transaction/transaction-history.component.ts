@@ -1,10 +1,11 @@
-import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
+import { WebSocketService } from '../../../services/websocket.service';
 
 interface Transaction {
   id: number;
@@ -32,9 +33,9 @@ export class TransactionHistoryComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private router = inject(Router);
   private http = inject(HttpClient);
-  Math = Math;
+  private wsService = inject(WebSocketService);
 
-  transactions: Transaction[] = [];
+  transactions = signal<Transaction[]>([]);
   filteredTransactions = signal<Transaction[]>([]); // Signal pour les transactions filtrées
   adminName = '';
   isLoading = false;
@@ -44,6 +45,7 @@ export class TransactionHistoryComponent implements OnInit, OnDestroy {
   startDate = '';
   endDate = '';
   pollingInterval: any;
+  Math = Math;
 
   // Pagination
   currentPage = 1;
@@ -65,6 +67,19 @@ export class TransactionHistoryComponent implements OnInit, OnDestroy {
     } else {
       this.apiUrl = environment.apiUrlDev;
     }
+
+    //Démarrer la connexion WebSocket pour les mises à jour en temps réel
+    this.wsService.connect();
+    effect(() => {
+      const data = this.wsService.transactions();
+      console.log('🔥 Temps réel:', data);
+      if (data.length > 0) {
+        this.transactions.set(data);
+        this.currentPage = 1; // 🔥 CRITIQUE
+        this.calculateStatistics(); // 🔥 IMPORTANT
+        this.applyFilters();
+      }
+    });
   }
 
   ngOnInit() {
@@ -72,22 +87,22 @@ export class TransactionHistoryComponent implements OnInit, OnDestroy {
     this.loadTransactions();
 
     // Polling toutes les 20 secondes
-    this.pollingInterval = setInterval(() => {
-      this.loadTransactions();
-    }, 20000);
+    // this.pollingInterval = setInterval(() => {
+    //   this.loadTransactions();
+    // }, 20000);
   }
 
   ngOnDestroy() {
-    if (this.pollingInterval) {
-      clearInterval(this.pollingInterval);
-    }
+    // if (this.pollingInterval) {
+    //   clearInterval(this.pollingInterval);
+    // }
   }
 
   loadTransactions() {
     this.isLoading = true;
     this.http.get<Transaction[]>(`${this.apiUrl}/admin/transactions`).subscribe({
       next: (data) => {
-        this.transactions = data;
+        this.transactions.set(data);
         this.totalTransactions = data.length;
         this.calculateStatistics();
         this.applyFilters();
@@ -101,41 +116,77 @@ export class TransactionHistoryComponent implements OnInit, OnDestroy {
   }
 
   calculateStatistics() {
-    this.totalAmount = this.transactions
+    this.totalAmount = this.transactions()
       .filter(tx => tx.status === 'COMPLETED')
       .reduce((sum, tx) => sum + tx.amount, 0);
 
-    this.depositCount = this.transactions.filter(tx => tx.type === 'DEPOSIT').length;
-    this.paymentCount = this.transactions.filter(tx => tx.type === 'PAYMENT').length;
+    this.depositCount = this.transactions().filter(tx => tx.type === 'DEPOSIT').length;
+    this.paymentCount = this.transactions().filter(tx => tx.type === 'PAYMENT').length;
   }
 
-  applyFilters() {
-    this.filteredTransactions.set(
-        this.transactions.filter(tx => {
-        const matchesSearch = tx.description?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                            tx.id.toString().includes(this.searchTerm);
-        const matchesType = this.selectedType === '' || tx.type === this.selectedType;
-        const matchesStatus = this.selectedStatus === '' || tx.status === this.selectedStatus;
+  // applyFilters() {
+  //   this.filteredTransactions.set(
+  //       this.transactions().filter(tx => {
+  //       const matchesSearch = tx.description?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+  //                           tx.id.toString().includes(this.searchTerm);
+  //       const matchesType = this.selectedType === '' || tx.type === this.selectedType;
+  //       const matchesStatus = this.selectedStatus === '' || tx.status === this.selectedStatus;
 
-        let matchesDateRange = true;
-        if (this.startDate || this.endDate) {
-          const txDate = new Date(tx.timestamp);
-          if (this.startDate) {
-            matchesDateRange = matchesDateRange && txDate >= new Date(this.startDate);
-          }
-          if (this.endDate) {
-            matchesDateRange = matchesDateRange && txDate <= new Date(this.endDate);
-          }
+  //       let matchesDateRange = true;
+  //       if (this.startDate || this.endDate) {
+  //         const txDate = new Date(tx.timestamp);
+  //         if (this.startDate) {
+  //           matchesDateRange = matchesDateRange && txDate >= new Date(this.startDate);
+  //         }
+  //         if (this.endDate) {
+  //           matchesDateRange = matchesDateRange && txDate <= new Date(this.endDate);
+  //         }
+  //       }
+
+  //       return matchesSearch && matchesType && matchesStatus && matchesDateRange;
+  //     })
+  //  );
+
+  //  console.log('Transactions après filtrage:', this.filteredTransactions());
+  //   // Pagination
+  //   const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+  //   this.filteredTransactions.set(this.filteredTransactions().slice(startIndex, startIndex + this.itemsPerPage));
+  // }
+  applyFilters() {
+    const allTx = this.transactions();
+    let filtered = allTx.filter(tx => {
+      const matchesSearch =
+        tx.description?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        tx.id.toString().includes(this.searchTerm);
+
+      const matchesType =
+        this.selectedType === '' || tx.type === this.selectedType;
+
+      const matchesStatus =
+        this.selectedStatus === '' || tx.status === this.selectedStatus;
+
+      let matchesDateRange = true;
+
+      if (this.startDate || this.endDate) {
+        const txDate = new Date(tx.timestamp);
+
+        if (this.startDate) {
+          matchesDateRange = matchesDateRange && txDate >= new Date(this.startDate);
         }
 
-        return matchesSearch && matchesType && matchesStatus && matchesDateRange;
-      })
-   );
+        if (this.endDate) {
+          matchesDateRange = matchesDateRange && txDate <= new Date(this.endDate);
+        }
+      }
 
-   console.log('Transactions après filtrage:', this.filteredTransactions());
-    // Pagination
+      return matchesSearch && matchesType && matchesStatus && matchesDateRange;
+    });
+
+    this.totalTransactions = filtered.length;
+
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    this.filteredTransactions.set(this.filteredTransactions().slice(startIndex, startIndex + this.itemsPerPage));
+
+    this.filteredTransactions.set(filtered.slice(startIndex, startIndex + this.itemsPerPage));
   }
 
   onSearch() {
@@ -218,11 +269,11 @@ export class TransactionHistoryComponent implements OnInit, OnDestroy {
   }
 
   getTotalPages(): number {
-    return Math.ceil(this.transactions.length / this.itemsPerPage);
+    return Math.ceil(this.transactions().length / this.itemsPerPage);
   }
 
   exportToCSV() {
-    const csv = this.convertToCSV(this.transactions);
+    const csv = this.convertToCSV(this.transactions());
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);

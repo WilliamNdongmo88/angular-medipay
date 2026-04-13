@@ -1,10 +1,11 @@
-import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../services/auth.service';
 import { environment } from '../../../../environments/environment';
+import { WebSocketService } from '../../../services/websocket.service';
 
 interface User {
   id: number;
@@ -27,9 +28,9 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private router = inject(Router);
   private http = inject(HttpClient);
-  Math = Math;
+  private wsService = inject(WebSocketService);
 
-  users: User[] = [];
+  users = signal<User[]>([]);
   //filteredUsers: User[] = [];
   filteredUsers = signal<User[]>([]);
   adminName = '';
@@ -37,6 +38,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   searchTerm = '';
   selectedRole = '';
   pollingInterval: any;
+  Math = Math;
 
   // Pagination
   currentPage = 1;
@@ -53,6 +55,18 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     } else {
       this.apiUrl = environment.apiUrlDev;
     }
+
+    //Démarrer la connexion WebSocket pour les mises à jour en temps réel
+    this.wsService.connect();
+    effect(() => {
+      const data = this.wsService.users();
+      console.log('🔥 Temps réel:', data);
+      if (data.length > 0) {
+        this.users.set(data);
+        this.totalUsers = data.length;
+        this.applyFilters();
+      }
+    });
   }
 
   ngOnInit() {
@@ -60,26 +74,27 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     this.loadUsers();
 
     // Polling toutes les 15 secondes pour les mises à jour
-    this.pollingInterval = setInterval(() => {
-      this.loadUsers();
-    }, 15000);
+    // this.pollingInterval = setInterval(() => {
+    //   this.loadUsers();
+    // }, 15000);
   }
 
   ngOnDestroy() {
-    if (this.pollingInterval) {
-      clearInterval(this.pollingInterval);
-    }
+    // if (this.pollingInterval) {
+    //   clearInterval(this.pollingInterval);
+    // }
+    this.wsService.disconnect();
   }
 
   loadUsers() {
     this.isLoading = true;
     this.http.get<User[]>(`${this.apiUrl}/admin/users`).subscribe({
       next: (data) => {
-        this.users = data;
+        this.users.set(data);
         this.totalUsers = data.length;
         this.applyFilters();
         this.isLoading = false;
-        console.log("users: ", this.users);
+        console.log("users: ", this.users());
       },
       error: (err) => {
         console.error('Erreur lors du chargement des utilisateurs:', err);
@@ -89,18 +104,21 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   }
 
   applyFilters() {
-    this.filteredUsers.set(this.users.filter(user => {
-      const matchesSearch = user.username.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                           user.email.toLowerCase().includes(this.searchTerm.toLowerCase());
+    const allUsers = this.users();
+
+    let filtered = allUsers.filter(user => {
+      const matchesSearch =
+        user.username.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(this.searchTerm.toLowerCase());
+
       const matchesRole = this.selectedRole === '' || user.role === this.selectedRole;
+
       return matchesSearch && matchesRole;
-    }));
+    });
 
-    console.log("filteredUsers: ", this.filteredUsers());
-
-    // Pagination
+    this.totalUsers = filtered.length;
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    this.filteredUsers.set(this.filteredUsers().slice(startIndex, startIndex + this.itemsPerPage));
+    this.filteredUsers.set(filtered.slice(startIndex, startIndex + this.itemsPerPage));
   }
 
   onSearch() {
@@ -146,7 +164,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   }
 
   getTotalPages(): number {
-    return Math.ceil(this.users.length / this.itemsPerPage);
+    return Math.ceil(this.users().length / this.itemsPerPage);
   }
 
   onLogout() {
