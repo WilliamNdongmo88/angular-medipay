@@ -17,7 +17,7 @@
       <div class="d-flex justify-content-between align-items-start mb-4">
         <div>
           <p class="text-white-50 small mb-0">Solde Disponible</p>
-          <h1 class="fw-bold mb-0 display-5">{{ currentBalance | number:'1.0-0' }} <small class="fs-4">XAF</small></h1>
+          <h1 class="fw-bold mb-0 display-5">{{ currentBalance() | number:'1.0-0' }} <small class="fs-4">XAF</small></h1>
         </div>
         <!-- src="img/logo_v4.png" alt="Logo" -->
         <img  class="mb-2 img_style">
@@ -87,3 +87,60 @@
     </div>
   </div>
 </div>
+
+<!-- MODAL DE PAIEMENT (S'affiche si showPaymentModal est vrai) -->
+@if (showPaymentModal) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal d-block animate__animated animate__fadeInUp" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg rounded-4">
+
+        <!-- Header de la Modal -->
+        <div class="modal-header border-0 p-4 pb-0">
+          <button type="button" class="btn-close" (click)="closeModal()" [disabled]="isProcessing()"></button>
+        </div>
+
+        <!-- Corps de la Modal -->
+        <div class="modal-body p-4 pt-0">
+          <div class="text-center mb-4">
+            <div class="bg-light p-3 rounded-circle d-inline-block mb-3 shadow-sm">
+              <i class="bi bi-shop h1 text-primary"></i>
+            </div>
+            <h5 class="text-muted small fw-bold mb-1">PAIEMENT À :</h5>
+            <h4 class="text-medipay-blue fw-bold">{{ pharmacistName }}</h4>
+          </div>
+
+          <form (submit)="confirmPayment()">
+            <div class="mb-4">
+              <label class="form-label small fw-bold text-dark">Montant de l'ordonnance (FCFA)</label>
+              <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden">
+                <input type="number" class="form-control border-0 fw-bold text-center bg-light"
+                       [(ngModel)]="amount" name="amount"
+                       placeholder="Saisissez le montant" required autofocus>
+                <span class="input-group-text border-0 bg-light fw-bold text-primary">FCFA</span>
+              </div>
+              <p class="text-center mt-2 small text-muted">Vérifiez bien le montant avant de valider.</p>
+            </div>
+
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-warning btn-lg fw-bold py-3 rounded-3 shadow-sm"
+                      [disabled]="!amount || amount <= 0 || isProcessing()">
+                @if (isProcessing()) {
+                  <span class="spinner-border spinner-border-sm me-2"></span> Traitement...
+                } @else {
+                  <i class="bi bi-check-circle-fill me-2"></i> Confirmer le paiement
+                }
+              </button>
+
+              <button type="button" class="btn btn-link text-muted text-decoration-none small"
+                      (click)="closeModal()" [disabled]="isProcessing()">
+                Annuler
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+}

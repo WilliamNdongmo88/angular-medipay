@@ -1,10 +1,11 @@
-import { Component, inject, OnInit , signal} from '@angular/core';
+import { Component, inject, OnInit , signal, effect} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
+import { WebSocketService } from '../../services/websocket.service';
 
 @Component({
   selector: 'app-pharmacist-dashboard',
@@ -17,14 +18,20 @@ export class PharmacistDashboardComponent implements OnInit {
   private http = inject(HttpClient );
   private authService = inject(AuthService);
   private router = inject(Router);
+  private wsService = inject(WebSocketService);
+
   private apiUrl: string | undefined;
   private isProd = environment.production;
 
   pharmacistName = '';
+  pharmacistId = 0;
   currentBalance = signal<number>(0);
   paymentAmount: number | null = null;
   qrCodeValue = '';
-  isGenerating = false;
+  pollingInterval: any;
+  qrCodeImage = signal<string | null>(null);
+  isGeneratingDynamic = false;
+  isGeneratingStatic = false;
   recentSales = signal<any[]>([]);
 
   constructor() {
@@ -34,13 +41,41 @@ export class PharmacistDashboardComponent implements OnInit {
     } else {
       this.apiUrl = environment.apiUrlDev;
     }
+
+    //Démarrer la connexion WebSocket pour les mises à jour en temps réel
+    this.wsService.connect();
+    effect(() => {
+      const data = this.wsService.transactions();
+      console.log('🔥 Temps réel:', data);
+      if (data.length > 0) {
+        console.log('🔥 Temps réel Historique des transactions:', data);
+        this.recentSales.set(data.filter(tx => tx.type === 'PAYMENT').slice(0, 6));
+        console.log('Historique des ventes:', this.recentSales());
+        this.currentBalance.set(
+          data.reduce((acc, tx) =>
+            acc + (tx.type === 'PAYMENT' ? Number(tx.amount) : 0), 0
+          )
+        );
+      }
+    });
   }
 
   ngOnInit() {
-    this.pharmacistName = this.authService.currentUser()?.username || 'Pharmacien';
+    const pharmacist = this.authService.currentUser();
+    this.pharmacistId = pharmacist?.id || 0;
+    this.pharmacistName = pharmacist?.username || 'Pharmacien';
     this.loadData();
     // Optionnel : Polling toutes les 5 secondes pour vérifier les nouveaux paiements
-    setInterval(() => this.loadData(), 5000);
+    // this.pollingInterval = setInterval(() => {
+    //   this.loadData();
+    // }, 5000);
+  }
+
+  ngOnDestroy() {
+    // if (this.pollingInterval) {
+    //   clearInterval(this.pollingInterval);
+    // }
+    this.wsService.disconnect();
   }
 
   loadData() {
@@ -48,7 +83,8 @@ export class PharmacistDashboardComponent implements OnInit {
     this.http.get<any[]>(`${this.apiUrl}/payment/history`)
     .subscribe({
       next: (data) => {
-        this.recentSales.set(data.filter(tx => tx.type === 'PAYMENT').slice(0, 8));
+        console.log('Historique des transactions:', data);
+        this.recentSales.set(data.filter(tx => tx.type === 'PAYMENT').slice(0, 6));
         console.log('Historique des ventes:', this.recentSales());
         this.currentBalance.set(
           data.reduce((acc, tx) =>
@@ -57,7 +93,7 @@ export class PharmacistDashboardComponent implements OnInit {
         );
         console.log('Solde actuel:', this.currentBalance());
         // Calculer le solde actuel (ou via un endpoint dédié si disponible)
-        // Pour cet exemple, on suppose que le solde est géré côté backend
+        // Pour cet exemple, le solde est géré côté backend
       },
       error: (error) => {
         console.error('Erreur lors du chargement des données:', error);
@@ -67,20 +103,45 @@ export class PharmacistDashboardComponent implements OnInit {
   }
 
   generateQR() {
-    this.isGenerating = true;
+    this.isGeneratingDynamic = true;
     const request = { amount: this.paymentAmount };
 
     this.http.post<any>(`${this.apiUrl}/qrcode/generate`, request ).subscribe({
       next: (res) => {
         console.log('QR Code généré:', res.qrCodeValue);
         this.qrCodeValue = res.qrCodeValue;
-        this.isGenerating = false;
+        this.isGeneratingDynamic = false;
       },
       error: () => {
         alert('Erreur lors de la génération du QR Code');
-        this.isGenerating = false;
+        this.isGeneratingDynamic = false;
       }
     });
+  }
+
+  generateStaticQR() {
+    this.isGeneratingStatic = true;
+
+    this.http.get(`${this.apiUrl}/qrcode/generate/${this.pharmacistId}`, {
+      responseType: 'blob'
+    }).subscribe({
+      next: (blob) => {
+        this.qrCodeImage.set(URL.createObjectURL(blob)); // 🔥 simple et efficace
+        this.isGeneratingStatic = false;
+      },
+      error: (error) => {
+        alert('Erreur lors de la génération du QR Code statique');
+        console.error(error);
+        this.isGeneratingStatic = false;
+      }
+    });
+  }
+
+  telechargerQrcode(){
+    if (!this.qrCodeImage) {
+      alert('Aucun QR Code à télécharger');
+      return;
+    }
   }
 
   onLogout() {

@@ -24,9 +24,14 @@
         </div>
 
         <button (click)="generateQR()" class="btn btn-medipay w-100 py-3 fw-bold rounded-3 shadow-sm mb-4"
-                [disabled]="!paymentAmount || paymentAmount <= 0 || isGenerating">
-          @if (isGenerating) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                [disabled]="!paymentAmount || paymentAmount <= 0 || isGeneratingDynamic">
+          @if (isGeneratingDynamic) { <span class="spinner-border spinner-border-sm me-2"></span> }
           Générer le QR Code
+        </button>
+
+        <button (click)="generateStaticQR()" class="btn btn-medipay w-100 py-3 fw-bold rounded-3 shadow-sm mb-4">
+          @if (isGeneratingStatic) { <span class="spinner-border spinner-border-sm me-2"></span> }
+          Générer un QR Code static
         </button>
 
         <!-- Zone d'affichage du QR Code -->
@@ -41,6 +46,23 @@
             <div class="mt-2">
                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">
                 <i class="bi bi-hourglass-split me-1"></i> En attente du patient...</span>
+            </div>
+          </div>
+        }
+        @if(qrCodeImage()) {
+          <div class="text-center p-4 bg-light rounded-4 border border-dashed animate__animated animate__fadeIn">
+            <p class="text-muted small mb-3">Faites scanner ce code au patient</p>
+            <!-- Note: Utiliser une lib comme ngx-kjua ou simplement afficher l'image du QR -->
+            <div class="qr-placeholder bg-white p-3 d-inline-block shadow-sm rounded-3 mb-3">
+               <img [src]="qrCodeImage()" alt="QR Code">
+            </div>
+            <h5 class="fw-bold text-medipay-orange">{{ paymentAmount }} XAF</h5>
+            <div class="mt-2">
+              <a href="{{ qrCodeImage() }}" download>
+               <span class="badge bg-warning text-dark px-3 py-2 rounded-pill" href="#">
+                <i class="bi bi-download me-1"></i> Télécharger qrCode
+              </span>
+              </a>
             </div>
           </div>
         }

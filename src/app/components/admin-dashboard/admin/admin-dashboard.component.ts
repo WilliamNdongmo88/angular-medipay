@@ -187,24 +187,6 @@ export class AdminDashboardComponent implements OnInit {
     this.creditData = { userId: null, amount: null };
   }
 
-  // onCredit(event: Event) {
-  //   event.preventDefault();
-  //   this.isProcessing = true;
-
-  //   this.http.post(`${this.apiUrl}/admin/credit`, this.creditData ).subscribe({
-  //     next: () => {
-  //       alert('Compte crédité avec succès !');
-  //       this.isProcessing = false;
-  //       this.creditData = { userId: null, amount: null };
-  //       this.loadRecentTransactions();
-  //     },
-  //     error: () => {
-  //       alert('Erreur lors du crédit.');
-  //       this.isProcessing = false;
-  //     }
-  //   });
-  // }
-
   formatDate(date: string): string {
     return new Date(date).toLocaleDateString('fr-FR', {
       weekday: 'long',

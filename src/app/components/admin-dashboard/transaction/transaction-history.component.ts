@@ -96,6 +96,7 @@ export class TransactionHistoryComponent implements OnInit, OnDestroy {
     // if (this.pollingInterval) {
     //   clearInterval(this.pollingInterval);
     // }
+    this.wsService.disconnect();
   }
 
   loadTransactions() {

@@ -5,6 +5,7 @@ import { environment } from '../../environments/environment';
 import SockJS from 'sockjs-client';
 import { User } from '../models/user.model';
 import { Transaction } from '../models/transaction.model';
+import { Wallet } from '../models/wallet.model';
 
 @Injectable({ providedIn: 'root' })
 export class WebSocketService {
@@ -12,6 +13,7 @@ export class WebSocketService {
   private stompClient!: Client;
   transactions = signal<any[]>([]);
   users = signal<any[]>([]);
+  wallets = signal<any[]>([]);
 
   private wsUrl: string | undefined;
   private isProd = environment.production;
@@ -56,7 +58,32 @@ export class WebSocketService {
               updatedList.unshift(tx); // add
             }
           });
+          console.log('🔄 Transactions mises à jour:', updatedList);
+          return updatedList;
+        });
+      });
 
+      // WebSocket pour l'historique des transactions du wallet
+      this.stompClient.subscribe('/topic/wallets', (message) => {
+        const payload = JSON.parse(message.body);
+
+        const transactions: Transaction[] = Array.isArray(payload)
+          ? payload
+          : [payload];
+
+        this.transactions.update(list => {
+          let updatedList = [...list];
+
+          transactions.forEach(tx => {
+            const index = updatedList.findIndex(t => t.id === tx.id);
+
+            if (index !== -1) {
+              updatedList[index] = tx; // update
+            } else {
+              updatedList.unshift(tx); // add
+            }
+          });
+          console.log('🔄 Transactions wallet mises à jour:', updatedList);
           return updatedList;
         });
       });
