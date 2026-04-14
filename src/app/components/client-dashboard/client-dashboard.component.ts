@@ -64,9 +64,10 @@ export class ClientDashboardComponent implements OnInit {
         this.history.set(data.filter(tx => tx.type === 'DEPOSIT' && tx.receiverId === this.clientId));
         console.log('Historique des ventes:', this.history());
         this.currentBalance.set(
-          data.filter(t => t.type === 'DEPOSIT')
+          this.history().filter(t => t.type === 'DEPOSIT')
               .reduce((max, t) => t.receiverBalance > max ? t.receiverBalance : max, 0)
         );
+        console.log("#currentBalance: ", this.currentBalance());
       }
     });
   }
