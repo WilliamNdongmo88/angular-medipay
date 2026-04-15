@@ -7,6 +7,8 @@ import { User } from '../models/user.model';
 import { Transaction } from '../models/transaction.model';
 import { Subject } from 'rxjs';
 import { CommunicationService } from './share.service';
+import { NotificationService } from './notification.service';
+import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class WebSocketService {
@@ -15,16 +17,28 @@ export class WebSocketService {
   transactions = signal<any[]>([]);
   users = signal<any[]>([]);
   notifications = signal<any[]>([]);
+  userName = signal<string | null>(null);
+  userId: number | null = null;
 
   private wsUrl: string | undefined;
   private isProd = environment.production;
 
-  constructor(private communicationService: CommunicationService) {
+  constructor(
+    private communicationService: CommunicationService,
+    private notificationService: NotificationService,
+    private authService: AuthService
+  ) {
     // Définir l'URL de l'API selon l'environnement
     if (this.isProd) {
       this.wsUrl = environment.brokerURLProd;
     } else {
       this.wsUrl = environment.brokerURLDev;
+    }
+
+    const user = this.authService.currentUser();
+    if (user) {
+      this.userName.set(user.username);
+      this.userId = user.id;
     }
   }
 
@@ -100,7 +114,27 @@ export class WebSocketService {
   }
 
   private showToast(data: any) {
-    console.log("Nouvelle notification reçue :", data);
+
+    console.log("🔔 Notification reçue :", data);
+    console.log("🔔 User ID ciblé :", data.receiverId, " | Type :", data.type);
+    console.log("🔔 User ID actuel :", this.userId);
+
+    // 🔥 déclenche directement le toast global
+    if (data?.type === 'DEPOSIT' && Number(data.receiverId) === this.userId) {
+      this.notificationService.show({
+        type: data.type,
+        message: data.message,
+        senderName: data.senderName
+      });
+    }else if (data?.type === 'PAYMENT' && Number(data.receiverId) === this.userId) {
+      this.notificationService.show({
+        type: data.type,
+        message: data.message,
+        senderName: data.senderName
+      });
+    }
+
+    // (optionnel si tu veux garder communicationService)
     this.communicationService.triggerSenderAction(data);
   }
 

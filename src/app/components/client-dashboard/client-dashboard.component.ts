@@ -8,10 +8,7 @@ import { BarcodeFormat } from '@zxing/library';
 import { environment } from '../../../environments/environment';
 import { FormsModule } from '@angular/forms';
 import { WebSocketService } from '../../services/websocket.service';
-import { CommunicationService } from '../../services/share.service';
 import { NotificationService } from '../../services/notification.service';
-
-const TYPE_DE_DEPOT = 'DEPOSIT';
 
 @Component({
   selector: 'app-client-dashboard',
@@ -46,15 +43,9 @@ export class ClientDashboardComponent implements OnInit {
   allowedFormats = [ BarcodeFormat.QR_CODE ];
   showBalance = signal(true);
 
-  constructor(private communicationService: CommunicationService,
-              private notificationService: NotificationService
-  ) {
+  constructor(private notificationService: NotificationService) {
     // Définir l'URL de l'API selon l'environnement
-    if (this.isProd) {
-      this.apiUrl = environment.apiUrlProd;
-    } else {
-      this.apiUrl = environment.apiUrlDev;
-    }
+    this.apiUrl = this.isProd ? environment.apiUrlProd : environment.apiUrlDev;
 
     const user = this.authService.currentUser();
     if (user) {
@@ -64,7 +55,7 @@ export class ClientDashboardComponent implements OnInit {
     }
 
     //Démarrer la connexion WebSocket pour les mises à jour en temps réel
-    this.wsService.connect();
+    //this.wsService.connect(); // La connexion est déjà établie globalement dans AppComponent, pas besoin de la refaire ici
     effect(() => {
       const data = this.wsService.transactions();
       console.log('🔥 Temps réel:', data);
@@ -88,22 +79,10 @@ export class ClientDashboardComponent implements OnInit {
     //   this.clientId = user.id;
     // }
     this.loadData();
-
-    // 4. ABONNEMENT : On écoute les nouvelles notifications
-    this.communicationService.triggerAction$.subscribe((data) => {
-      console.log('#Donnée reçue:', data);
-      if(Number(data.receiverId) === this.clientId && (data.type === TYPE_DE_DEPOT)) {
-        this.notificationService.show({
-          type: data.type,
-          message: data.message,
-          senderName: data.senderName
-        });
-      }
-    });
   }
 
   ngOnDestroy(){
-    this.wsService.disconnect();
+    //this.wsService.disconnect();
     // Toujours se désabonner pour éviter les fuites de mémoire
     if (this.subscription) {
       this.subscription.unsubscribe();

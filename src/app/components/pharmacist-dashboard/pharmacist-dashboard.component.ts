@@ -6,10 +6,6 @@ import { AuthService } from '../../services/auth.service';
 import { Router, RouterLink } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { WebSocketService } from '../../services/websocket.service';
-import { CommunicationService } from '../../services/share.service';
-import { NotificationService } from '../../services/notification.service';
-
-const TYPE_DE_DEPOT = 'PAYMENT';
 
 @Component({
   selector: 'app-pharmacist-dashboard',
@@ -42,10 +38,7 @@ export class PharmacistDashboardComponent implements OnInit {
 
   showBalance = signal(true);
 
-  constructor(
-    private communicationService: CommunicationService,
-    private notificationService: NotificationService
-  )
+  constructor()
   {
     // Définir l'URL de l'API selon l'environnement
     if (this.isProd) {
@@ -55,7 +48,7 @@ export class PharmacistDashboardComponent implements OnInit {
     }
 
     //Démarrer la connexion WebSocket pour les mises à jour en temps réel
-    this.wsService.connect();
+    //this.wsService.connect(); // La connexion est déjà établie globalement dans AppComponent, pas besoin de la refaire ici
     effect(() => {
       const data = this.wsService.transactions();
       console.log('🔥 Temps réel:', data);
@@ -81,18 +74,6 @@ export class PharmacistDashboardComponent implements OnInit {
     // this.pollingInterval = setInterval(() => {
     //   this.loadData();
     // }, 5000);
-
-    // 4. ABONNEMENT : On écoute les nouvelles notifications
-    this.communicationService.triggerAction$.subscribe((data) => {
-      console.log('#Donnée reçue:', data);
-      if(Number(data.receiverId) === this.pharmacistId && (data.type === TYPE_DE_DEPOT)) {
-        this.notificationService.show({
-          type: data.type,
-          message: data.message,
-          senderName: data.senderName
-        });
-      }
-    });
   }
 
   ngOnDestroy() {

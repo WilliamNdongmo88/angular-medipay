@@ -1,6 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NotificationToastComponent } from "./components/notification/notification-toast.component";
+import { WebSocketService } from './services/websocket.service';
 
 @Component({
   selector: 'app-root',
@@ -10,4 +11,10 @@ import { NotificationToastComponent } from "./components/notification/notificati
 })
 export class App {
   protected readonly title = signal('medipay-frontend');
+
+  private ws = inject(WebSocketService);
+
+  ngOnInit() {
+    this.ws.connect(); // 🔥 UNE seule fois pour toute l'app
+  }
 }
