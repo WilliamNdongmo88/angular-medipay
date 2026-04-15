@@ -8,6 +8,10 @@ import { BarcodeFormat } from '@zxing/library';
 import { environment } from '../../../environments/environment';
 import { FormsModule } from '@angular/forms';
 import { WebSocketService } from '../../services/websocket.service';
+import { CommunicationService } from '../../services/share.service';
+import { NotificationService } from '../../services/notification.service';
+
+const TYPE_DE_DEPOT = 'DEPOSIT';
 
 @Component({
   selector: 'app-client-dashboard',
@@ -21,6 +25,8 @@ export class ClientDashboardComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private wsService = inject(WebSocketService);
+  currentNotification = signal<any>(null);
+  private subscription: any;
 
   private apiUrl: string | undefined;
   private isProd = environment.production;
@@ -39,7 +45,9 @@ export class ClientDashboardComponent implements OnInit {
   history = signal<any[]>([]);
   allowedFormats = [ BarcodeFormat.QR_CODE ];
 
-  constructor() {
+  constructor(private communicationService: CommunicationService,
+              private notificationService: NotificationService
+  ) {
     // Définir l'URL de l'API selon l'environnement
     if (this.isProd) {
       this.apiUrl = environment.apiUrlProd;
@@ -79,10 +87,33 @@ export class ClientDashboardComponent implements OnInit {
     //   this.clientId = user.id;
     // }
     this.loadData();
+
+    // 4. ABONNEMENT : On écoute les nouvelles notifications
+    this.communicationService.triggerAction$.subscribe((data) => {
+      console.log('#Donnée reçue:', data);
+      if(Number(data.receiverId) === this.clientId && (data.type === TYPE_DE_DEPOT)) {
+        this.notificationService.show({
+          type: data.type,
+          message: data.message,
+          senderName: data.senderName
+        });
+      }
+    });
+
+    // Simuler une notification de dépôt pour les tests
+    this.notificationService.show({
+      type: 'DEPOSIT',
+      message: 'Vous avez reçu 5000 FCFA'
+    });
+
   }
 
   ngOnDestroy(){
     this.wsService.disconnect();
+    // Toujours se désabonner pour éviter les fuites de mémoire
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
   }
 
   loadData() {
@@ -146,7 +177,7 @@ export class ClientDashboardComponent implements OnInit {
   }
 
   closeModal() {
-    if (!this.isProcessing) {
+    if (!this.isProcessing()) {
       this.showPaymentModal = false;
     }
   }
@@ -180,6 +211,7 @@ export class ClientDashboardComponent implements OnInit {
   }
 
   onLogout() {
+    this.notificationService.clear();
     this.authService.logout();
     this.router.navigate(['/login']);
   }

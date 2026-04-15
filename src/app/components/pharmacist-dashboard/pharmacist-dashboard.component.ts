@@ -6,6 +6,10 @@ import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { WebSocketService } from '../../services/websocket.service';
+import { CommunicationService } from '../../services/share.service';
+import { NotificationService } from '../../services/notification.service';
+
+const TYPE_DE_DEPOT = 'PAYMENT';
 
 @Component({
   selector: 'app-pharmacist-dashboard',
@@ -19,6 +23,8 @@ export class PharmacistDashboardComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private wsService = inject(WebSocketService);
+  currentNotification = signal<any>(null);
+  private subscription: any;
 
   private apiUrl: string | undefined;
   private isProd = environment.production;
@@ -34,7 +40,11 @@ export class PharmacistDashboardComponent implements OnInit {
   isGeneratingStatic = false;
   recentSales = signal<any[]>([]);
 
-  constructor() {
+  constructor(
+    private communicationService: CommunicationService,
+    private notificationService: NotificationService
+  )
+  {
     // Définir l'URL de l'API selon l'environnement
     if (this.isProd) {
       this.apiUrl = environment.apiUrlProd;
@@ -49,11 +59,11 @@ export class PharmacistDashboardComponent implements OnInit {
       console.log('🔥 Temps réel:', data);
       if (data.length > 0) {
         console.log('🔥 Temps réel Historique des transactions:', data);
-        this.recentSales.set(data.filter(tx => tx.type === 'PAYMENT').slice(0, 6));
+        this.recentSales.set(data.filter(tx => tx.type === 'PAYMENT' && tx.receiverId === this.pharmacistId).slice(0, 6));
         console.log('Historique des ventes:', this.recentSales());
         this.currentBalance.set(
           data.reduce((acc, tx) =>
-            acc + (tx.type === 'PAYMENT' ? Number(tx.amount) : 0), 0
+            acc + ((tx.type === 'PAYMENT' && tx.receiverId === this.pharmacistId) ? Number(tx.amount) : 0), 0
           )
         );
       }
@@ -69,6 +79,18 @@ export class PharmacistDashboardComponent implements OnInit {
     // this.pollingInterval = setInterval(() => {
     //   this.loadData();
     // }, 5000);
+
+    // 4. ABONNEMENT : On écoute les nouvelles notifications
+    this.communicationService.triggerAction$.subscribe((data) => {
+      console.log('#Donnée reçue:', data);
+      if(Number(data.receiverId) === this.pharmacistId && (data.type === TYPE_DE_DEPOT)) {
+        this.notificationService.show({
+          type: data.type,
+          message: data.message,
+          senderName: data.senderName
+        });
+      }
+    });
   }
 
   ngOnDestroy() {
@@ -76,6 +98,10 @@ export class PharmacistDashboardComponent implements OnInit {
     //   clearInterval(this.pollingInterval);
     // }
     this.wsService.disconnect();
+    // Toujours se désabonner pour éviter les fuites de mémoire
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
   }
 
   loadData() {

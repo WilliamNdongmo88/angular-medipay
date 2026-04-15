@@ -1,14 +1,15 @@
 <!-- Exemple de Toast flottant -->
-@if (currentNotification) {
+@if (currentNotification()) {
   <div class="notification-toast animate__animated animate__fadeInRight shadow-lg border-start border-4"
-       [ngClass]="currentNotification.type === 'DEPOSIT' ? 'border-success' : 'border-primary'">
+       [ngClass]="currentNotification()?.type === 'DEPOSIT' ? 'border-success' : 'border-primary'">
     <div class="d-flex align-items-center p-3 bg-white rounded-3">
-      <div class="icon-box me-3" [class.bg-success-subtle]="currentNotification.type === 'DEPOSIT'">
-        <i class="bi" [ngClass]="currentNotification.type === 'DEPOSIT' ? 'bi-cash-stack text-success' : 'bi-check-circle-fill text-primary'"></i>
+      <div class="icon-box me-3" [class.bg-success-subtle]="currentNotification()?.type === 'DEPOSIT'">
+        <i class="bi" [ngClass]="currentNotification()?.type === 'DEPOSIT' ? 'bi-cash-stack text-success' : 'bi-check-circle-fill text-primary'"></i>
       </div>
       <div>
-        <h6 class="mb-0 fw-bold small">{{ currentNotification.type === 'DEPOSIT' ? 'Dépôt Reçu !' : 'Paiement Reçu !' }}</h6>
-        <p class="mb-0 text-muted" style="font-size: 0.8rem;">{{ currentNotification.message }}</p>
+        <h6 class="mb-0 fw-bold small">{{ currentNotification()?.type === 'DEPOSIT' ? 'Dépôt Reçu !' : 'Paiement Reçu !' }}</h6>
+        <p class="mb-0 text-muted" style="font-size: 0.8rem;">{{ currentNotification()?.message }}</p>
+        <p class="mb-0 text-muted" style="font-size: 0.8rem;">Par : {{ currentNotification()?.senderName }}</p>
       </div>
       <button type="button" class="btn-close ms-3 small" (click)="closeNotification()"></button>
     </div>

@@ -5,7 +5,8 @@ import { environment } from '../../environments/environment';
 import SockJS from 'sockjs-client';
 import { User } from '../models/user.model';
 import { Transaction } from '../models/transaction.model';
-import { Wallet } from '../models/wallet.model';
+import { Subject } from 'rxjs';
+import { CommunicationService } from './share.service';
 
 @Injectable({ providedIn: 'root' })
 export class WebSocketService {
@@ -13,12 +14,12 @@ export class WebSocketService {
   private stompClient!: Client;
   transactions = signal<any[]>([]);
   users = signal<any[]>([]);
-  wallets = signal<any[]>([]);
+  notifications = signal<any[]>([]);
 
   private wsUrl: string | undefined;
   private isProd = environment.production;
 
-  constructor() {
+  constructor(private communicationService: CommunicationService) {
     // Définir l'URL de l'API selon l'environnement
     if (this.isProd) {
       this.wsUrl = environment.brokerURLProd;
@@ -63,31 +64,6 @@ export class WebSocketService {
         });
       });
 
-      // WebSocket pour l'historique des transactions du wallet
-      this.stompClient.subscribe('/topic/wallets', (message) => {
-        const payload = JSON.parse(message.body);
-
-        const transactions: Transaction[] = Array.isArray(payload)
-          ? payload
-          : [payload];
-
-        this.transactions.update(list => {
-          let updatedList = [...list];
-
-          transactions.forEach(tx => {
-            const index = updatedList.findIndex(t => t.id === tx.id);
-
-            if (index !== -1) {
-              updatedList[index] = tx; // update
-            } else {
-              updatedList.unshift(tx); // add
-            }
-          });
-          console.log('🔄 Transactions wallet mises à jour:', updatedList);
-          return updatedList;
-        });
-      });
-
       // WebSocket pour les utilisateurs
       this.stompClient.subscribe('/topic/users', (message) => {
         const users: User[] = JSON.parse(message.body);
@@ -111,9 +87,21 @@ export class WebSocketService {
           return updatedList;
         });
       });
+
+      // S'abonner aux notifications privées de l'utilisateur
+      this.stompClient.subscribe(`/topic/notifications`, (notification: any) => {
+        const data : any[] = JSON.parse(notification.body);
+        console.log('🔔 Notification reçue:', data);
+        this.showToast(data);
+      });
     };
 
     this.stompClient.activate();
+  }
+
+  private showToast(data: any) {
+    console.log("Nouvelle notification reçue :", data);
+    this.communicationService.triggerSenderAction(data);
   }
 
   disconnect() {

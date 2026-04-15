@@ -1,0 +1,23 @@
+import { Injectable } from "@angular/core";
+import { Subject } from "rxjs";
+import { BehaviorSubject } from "rxjs/internal/BehaviorSubject";
+
+@Injectable({ providedIn: 'root' })
+export class CommunicationService {
+  private messageSource = new BehaviorSubject<any>("");
+  message$ = this.messageSource.asObservable();
+
+  sendMessage(variable: any) {
+    localStorage.setItem('variable', variable);
+    this.messageSource.next(variable);
+  }
+
+  // Pour déclencher une action chez le Sender
+  private triggerActionSource = new Subject<any>();
+  triggerAction$ = this.triggerActionSource.asObservable();
+
+  // Appelé par Receiver pour dire "Sender exécute ta méthode"
+  triggerSenderAction(action: any) {
+    this.triggerActionSource.next(action);
+  }
+}
