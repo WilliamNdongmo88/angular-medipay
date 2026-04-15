@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { WebSocketService } from '../../services/websocket.service';
 import { CommunicationService } from '../../services/share.service';
@@ -14,7 +14,7 @@ const TYPE_DE_DEPOT = 'PAYMENT';
 @Component({
   selector: 'app-pharmacist-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './pharmacist-dashboard.component.html',
   styleUrls: ['./pharmacist-dashboard.component.scss']
 } )

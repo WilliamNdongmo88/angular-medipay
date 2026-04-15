@@ -11,10 +11,28 @@
           <a class="nav-link text-white opacity-75" href="#" routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-white active bg-white bg-opacity-10 rounded" href="#" routerLink="/admin/users" routerLinkActive="active"><i class="bi bi-people me-2"></i> Utilisateurs</a>
+          <a class="nav-link text-white active bg-white bg-opacity-10 rounded" href="#" routerLink="/admin/users" routerLinkActive="active">
+            <i class="bi bi-people me-2"></i>
+             Utilisateurs
+          </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-white opacity-75" href="#" routerLink="/admin/transactions" routerLinkActive="active"><i class="bi bi-receipt me-2"></i> Transactions</a>
+          <a class="nav-link text-white opacity-75" href="#" routerLink="/admin/transactions" routerLinkActive="active">
+            <i class="bi bi-receipt me-2"></i>
+            Transactions
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-white opacity-75" href="#" routerLink="/admin/profile" routerLinkActive="active">
+            <i class="bi bi-person me-2"></i>
+            Mon Profil
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-white opacity-75" href="#" routerLink="/admin/settings" routerLinkActive="active">
+            <i class="bi bi-gear me-2"></i>
+            Paramètres
+          </a>
         </li>
         <li class="nav-item mt-5">
           <button (click)="onLogout()" class="btn btn-outline-light w-100 border-0 text-start"><i class="bi bi-box-arrow-right me-2"></i> Déconnexion</button>

@@ -2,7 +2,7 @@ import { Component, inject, OnInit, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ZXingScannerModule } from '@zxing/ngx-scanner';
 import { BarcodeFormat } from '@zxing/library';
 import { environment } from '../../../environments/environment';
@@ -16,7 +16,7 @@ const TYPE_DE_DEPOT = 'DEPOSIT';
 @Component({
   selector: 'app-client-dashboard',
   standalone: true,
-  imports: [CommonModule, ZXingScannerModule, FormsModule],
+  imports: [CommonModule, ZXingScannerModule, FormsModule, RouterLink],
   templateUrl: './client-dashboard.component.html',
   styleUrls: ['./client-dashboard.component.scss']
 } )
@@ -100,13 +100,6 @@ export class ClientDashboardComponent implements OnInit {
         });
       }
     });
-
-    // Simuler une notification de dépôt pour les tests
-    this.notificationService.show({
-      type: 'DEPOSIT',
-      message: 'Vous avez reçu 5000 FCFA'
-    });
-
   }
 
   ngOnDestroy(){

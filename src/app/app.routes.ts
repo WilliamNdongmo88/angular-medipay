@@ -8,6 +8,8 @@ import { UserManagementComponent } from './components/admin-dashboard/users/user
 import { authGuard } from './Guard/auth.guard';
 import { RegisterComponent } from './components/register/register.component';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
+import { ProfileComponent } from './components/profile/profile.component';
+// import { SettingsComponent } from './components/settings/settings.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -22,7 +24,7 @@ export const routes: Routes = [
   {
     path: 'admin/users',
     component: UserManagementComponent,
-    //canActivate: [authGuard],
+    canActivate: [authGuard],
     data: { role: 'ROLE_ADMIN' }
   },
   {
@@ -33,7 +35,30 @@ export const routes: Routes = [
   },
   { path: 'register', component: RegisterComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
-
+  {
+    path: 'admin/profile',
+    component: ProfileComponent,
+    canActivate: [authGuard],
+    data: { role: 'ROLE_ADMIN' }
+  },
+  // {
+  //   path: 'admin/settings',
+  //   component: SettingsComponent,
+  //   canActivate: [authGuard],
+  //   data: { role: 'ROLE_ADMIN' }
+  // },
+  {
+    path: 'client/profile',
+    component: ProfileComponent,
+    canActivate: [authGuard],
+    data: { role: 'ROLE_CLIENT' }
+  },
+  {
+    path: 'pharmacist/profile',
+    component: ProfileComponent,
+    canActivate: [authGuard],
+    data: { role: 'ROLE_PHARMACIST' }
+  },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: '**', redirectTo: 'login' }
   // Les autres routes seront ajoutées ici (Admin, Client, Pharmacist)
