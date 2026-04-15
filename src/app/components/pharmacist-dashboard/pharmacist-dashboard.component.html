@@ -1,95 +1,190 @@
-<div class="container py-4">
-  <!-- Header avec Solde -->
-  <div class="d-flex justify-content-between align-items-center mb-4 bg-medipay-blue p-4 rounded-4 shadow-sm text-white">
-    <div>
-      <h5 class="opacity-75 mb-1">Pharmacie : {{ pharmacistName }}</h5>
-      <h2 class="fw-bold mb-0">Solde : {{ currentBalance() | number:'1.2-2' }} XAF</h2>
-    </div>
-    <button (click)="onLogout()" class="btn btn-outline-light rounded-circle p-2 border-0"><i class="bi bi-box-arrow-right h4"></i></button>
-  </div>
+<div class="main-content">
+  <!-- Navbar Patient/Pharmacien Moderne -->
+  <nav class="main-header navbar navbar-expand-lg navbar-dark bg-medipay-blue shadow-sm sticky-top">
+    <div class="container">
+      <!-- Logo & Titre -->
+      <a class="navbar-brand fw-bold d-flex align-items-center" href="#">
+        <!-- <i class="bi bi-heart-pulse-fill me-2 text-warning"></i> -->
+        <img src="img/logo_v5.png" class="img_style" alt="logo">
+        MediPay <span class="badge bg-warning text-white ms-2 small fw-normal">Pharmacien</span>
+      </a>
 
-  <div class="row g-4">
-    <!-- Générateur de Paiement -->
-    <div class="col-md-7">
-      <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
-        <h4 class="fw-bold text-medipay-blue mb-4"><i class="bi bi-qr-code-scan me-2"></i> Encaisser un Paiement</h4>
+      <!-- Menu Utilisateur (Dropdown) -->
+      <div class="dropdown">
+        <button class="btn d-flex align-items-center gap-2 p-1 border-0"
+                type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
 
-        <div class="mb-4">
-          <label class="form-label fw-bold small">Montant de la prescription (XAF)</label>
-          <div class="input-group input-group-lg">
-            <span class="input-group-text bg-light border-end-0 text-medipay-orange fw-bold">XAF</span>
-            <input type="number" class="form-control bg-light border-start-0 fw-bold"
-                   [(ngModel)]="paymentAmount" placeholder="0" (input)="qrCodeValue = ''">
+          <!-- Affichage Desktop : Badge complet -->
+          <div class="d-none d-md-flex align-items-center bg-white bg-opacity-10 rounded-pill px-3 py-1 border border-white border-opacity-25 hover-scale">
+            <i class="bi bi-person-circle me-2 text-warning"></i>
+            <span class="text-white small fw-bold">{{ pharmacistName }}</span>
+            <i class="bi bi-chevron-down ms-2 text-white-50 small"></i>
           </div>
-        </div>
 
-        <button (click)="generateQR()" class="btn btn-medipay w-100 py-3 fw-bold rounded-3 shadow-sm mb-4"
-                [disabled]="!paymentAmount || paymentAmount <= 0 || isGeneratingDynamic">
-          @if (isGeneratingDynamic) { <span class="spinner-border spinner-border-sm me-2"></span> }
-          Générer le QR Code
+          <!-- Affichage Mobile : Icône Menu simple -->
+          <div class="d-md-none bg-white bg-opacity-10 rounded-circle p-2 border border-white border-opacity-25">
+            <i class="bi bi-list text-white h4 mb-0"></i>
+          </div>
         </button>
 
-        <button (click)="generateStaticQR()" class="btn btn-medipay w-100 py-3 fw-bold rounded-3 shadow-sm mb-4">
-          @if (isGeneratingStatic) { <span class="spinner-border spinner-border-sm me-2"></span> }
-          Générer un QR Code static
-        </button>
+        <!-- Options du Menu -->
+        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 mt-2 animate__animated animate__fadeIn"
+            aria-labelledby="userMenu">
 
-        <!-- Zone d'affichage du QR Code -->
-        @if (qrCodeValue) {
-          <div class="text-center p-4 bg-light rounded-4 border border-dashed animate__animated animate__fadeIn">
-            <p class="text-muted small mb-3">Faites scanner ce code au patient</p>
-            <!-- Note: Utiliser une lib comme ngx-kjua ou simplement afficher l'image du QR -->
-            <div class="qr-placeholder bg-white p-3 d-inline-block shadow-sm rounded-3 mb-3">
-               <img [src]="'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + qrCodeValue" alt="QR Code">
-            </div>
-            <h5 class="fw-bold text-medipay-orange">{{ paymentAmount }} XAF</h5>
-            <div class="mt-2">
-               <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">
-                <i class="bi bi-hourglass-split me-1"></i> En attente du patient...</span>
-            </div>
-          </div>
-        }
-        @if(qrCodeImage()) {
-          <div class="text-center p-4 bg-light rounded-4 border border-dashed animate__animated animate__fadeIn">
-            <p class="text-muted small mb-3">Faites scanner ce code au patient</p>
-            <!-- Note: Utiliser une lib comme ngx-kjua ou simplement afficher l'image du QR -->
-            <div class="qr-placeholder bg-white p-3 d-inline-block shadow-sm rounded-3 mb-3">
-               <img [src]="qrCodeImage()" alt="QR Code">
-            </div>
-            <h5 class="fw-bold text-medipay-orange">{{ paymentAmount }} XAF</h5>
-            <div class="mt-2">
-              <a href="{{ qrCodeImage() }}" download>
-               <span class="badge bg-warning text-dark px-3 py-2 rounded-pill" href="#">
-                <i class="bi bi-download me-1"></i> Télécharger qrCode
-              </span>
-              </a>
-            </div>
-          </div>
-        }
-      </div>
-    </div>
-
-    <!-- Historique des ventes du jour -->
-    <div class="col-md-5">
-      <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
-        <h5 class="fw-bold text-medipay-blue mb-4">Ventes Récentes</h5>
-        <div class="list-group list-group-flush">
-          @for (sale of recentSales(); track sale.id ) {
-            <div class="list-group-item px-0 border-0 mb-2">
-              <div class="d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center">
-                  <div class="bg-success bg-opacity-10 p-2 rounded-3 me-3 text-success"><i class="bi bi-check-circle-fill"></i></div>
-                  <div>
-                    <p class="mb-0 fw-bold small">Reçu de : {{ sale.senderName }}</p>
-                    <p class="text-muted extra-small mb-0">{{ sale.timestamp | date:'shortTime' }}</p>
-                  </div>
-                </div>
-                <span class="fw-bold text-success">+{{ sale.amount | number:'1.2-2' }}</span>
+          <!-- Info Utilisateur (Visible uniquement sur mobile dans le menu) -->
+          <li class="d-md-none px-3 py-2 border-bottom mb-2">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-person-circle h4 me-2 text-primary mb-0"></i>
+              <div>
+                <p class="mb-0 fw-bold small text-dark">{{ pharmacistName }}</p>
+                <p class="mb-0 text-muted" style="font-size: 0.7rem;">Connecté en tant que Pharmacien</p>
               </div>
             </div>
-          } @empty {
-            <p class="text-center text-muted py-5">Aucune vente aujourd'hui</p>
+          </li>
+
+          <li>
+            <a class="dropdown-item d-flex align-items-center py-2" href="#">
+              <i class="bi bi-person me-2 text-muted"></i> Mon Profil
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item d-flex align-items-center py-2" href="#">
+              <i class="bi bi-gear me-2 text-muted"></i> Paramètres
+            </a>
+          </li>
+          <li><hr class="dropdown-divider"></li>
+          <li>
+            <button (click)="onLogout()" class="dropdown-item d-flex align-items-center py-2 text-danger fw-bold">
+              <i class="bi bi-box-arrow-right me-2"></i> Déconnexion
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container content-body py-4">
+    <!-- Header avec Solde -->
+    <div class="d-flex justify-content-between align-items-center mb-4 bg-medipay-blue p-4 rounded-4 shadow-sm text-white">
+
+      <!-- LEFT : Pharmacie -->
+      <div class="d-flex align-items-center gap-3">
+        <div class="icon-box">
+          <i class="bi bi-shop"></i>
+        </div>
+
+        <div>
+          <div class="small opacity-50">Pharmacie</div>
+          <div class="fw-semibold">{{ pharmacistName }}</div>
+        </div>
+      </div>
+
+      <!-- RIGHT : Solde -->
+      <div class="text-end">
+
+        <div class="d-flex align-items-center justify-content-end gap-2">
+
+          <h3 class="fw-bold mb-0">
+            {{ showBalance() ? (currentBalance() | number:'1.2-2') + ' XAF' : '••••••' }}
+          </h3>
+
+          <!-- toggle visibilité btn-dark -->
+          <button class="btn btn-sm  border-0 toggle-btn"
+                  (click)="toggleBalance()">
+            <i class="bi" [ngClass]="showBalance() ? 'bi-eye-slash' : 'bi-eye'"></i>
+          </button>
+
+        </div>
+
+        <div class="small opacity-50">Solde disponible</div>
+
+      </div>
+
+    </div>
+
+    <div class="row g-4">
+      <!-- Générateur de Paiement -->
+      <div class="col-md-7">
+        <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+          <h4 class="fw-bold text-medipay-blue mb-4"><i class="bi bi-qr-code-scan me-2"></i> Encaisser un Paiement</h4>
+
+          <div class="mb-4">
+            <label class="form-label fw-bold small">Montant de la prescription (XAF)</label>
+            <div class="input-group input-group-lg">
+              <span class="input-group-text bg-light border-end-0 text-medipay-orange fw-bold">XAF</span>
+              <input type="number" class="form-control bg-light border-start-0 fw-bold"
+                    [(ngModel)]="paymentAmount" placeholder="0" (input)="qrCodeValue = ''">
+            </div>
+          </div>
+
+          <button (click)="generateQR()" class="btn btn-medipay w-100 py-3 fw-bold rounded-3 shadow-sm mb-4"
+                  [disabled]="!paymentAmount || paymentAmount <= 0 || isGeneratingDynamic">
+            @if (isGeneratingDynamic) { <span class="spinner-border spinner-border-sm me-2"></span> }
+            Générer le QR Code
+          </button>
+
+          <button (click)="generateStaticQR()" class="btn btn-medipay w-100 py-3 fw-bold rounded-3 shadow-sm mb-4">
+            @if (isGeneratingStatic) { <span class="spinner-border spinner-border-sm me-2"></span> }
+            Générer un QR Code static
+          </button>
+
+          <!-- Zone d'affichage du QR Code -->
+          @if (qrCodeValue) {
+            <div class="text-center p-4 bg-light rounded-4 border border-dashed animate__animated animate__fadeIn">
+              <p class="text-muted small mb-3">Faites scanner ce code au patient</p>
+              <!-- Note: Utiliser une lib comme ngx-kjua ou simplement afficher l'image du QR -->
+              <div class="qr-placeholder bg-white p-3 d-inline-block shadow-sm rounded-3 mb-3">
+                <img [src]="'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + qrCodeValue" alt="QR Code">
+              </div>
+              <h5 class="fw-bold text-medipay-orange">{{ paymentAmount }} XAF</h5>
+              <div class="mt-2">
+                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">
+                  <i class="bi bi-hourglass-split me-1"></i> En attente du patient...</span>
+              </div>
+            </div>
           }
+          @if(qrCodeImage()) {
+            <div class="text-center p-4 bg-light rounded-4 border border-dashed animate__animated animate__fadeIn">
+              <p class="text-muted small mb-3">Faites scanner ce code au patient</p>
+              <!-- Note: Utiliser une lib comme ngx-kjua ou simplement afficher l'image du QR -->
+              <div class="qr-placeholder bg-white p-3 d-inline-block shadow-sm rounded-3 mb-3">
+                <img [src]="qrCodeImage()" alt="QR Code">
+              </div>
+              <h5 class="fw-bold text-medipay-orange">{{ paymentAmount }} XAF</h5>
+              <div class="mt-2">
+                <a href="{{ qrCodeImage() }}" download>
+                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill" href="#">
+                  <i class="bi bi-download me-1"></i> Télécharger qrCode
+                </span>
+                </a>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Historique des ventes du jour -->
+      <div class="col-md-5">
+        <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+          <h5 class="fw-bold text-medipay-blue mb-4">Ventes Récentes</h5>
+          <div class="list-group list-group-flush">
+            @for (sale of recentSales(); track sale.id ) {
+              <div class="list-group-item px-0 border-0 mb-2">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="d-flex align-items-center">
+                    <div class="bg-success bg-opacity-10 p-2 rounded-3 me-3 text-success"><i class="bi bi-check-circle-fill"></i></div>
+                    <div>
+                      <p class="mb-0 fw-bold small">Reçu de : {{ sale.senderName }}</p>
+                      <p class="text-muted extra-small mb-0">{{ sale.timestamp | date:'shortTime' }}</p>
+                    </div>
+                  </div>
+                  <span class="fw-bold text-success">+{{ sale.amount | number:'1.2-2' }}</span>
+                </div>
+              </div>
+            } @empty {
+              <p class="text-center text-muted py-5">Aucune vente aujourd'hui</p>
+            }
+          </div>
         </div>
       </div>
     </div>

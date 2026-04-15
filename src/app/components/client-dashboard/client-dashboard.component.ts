@@ -44,6 +44,7 @@ export class ClientDashboardComponent implements OnInit {
   isScanning = false;
   history = signal<any[]>([]);
   allowedFormats = [ BarcodeFormat.QR_CODE ];
+  showBalance = signal(true);
 
   constructor(private communicationService: CommunicationService,
               private notificationService: NotificationService
@@ -214,5 +215,9 @@ export class ClientDashboardComponent implements OnInit {
     this.notificationService.clear();
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  toggleBalance() {
+    this.showBalance.update(v => !v);
   }
 }

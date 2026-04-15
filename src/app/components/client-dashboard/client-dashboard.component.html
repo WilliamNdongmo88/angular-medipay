@@ -1,88 +1,201 @@
- <!-- Navbar Patient -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-medipay-blue shadow-sm py-3">
-  <div class="container">
-    <a class="navbar-brand fw-bold" href="#">MediPay <span class="badge bg-warning text-dark ms-2 small">Patient</span></a>
-    <div class="d-flex align-items-center gap-3">
-      <span class="text-white small d-none d-md-inline">Bienvenue, <strong>{{ clientName }}</strong></span>
-      <button (click)="onLogout()" class="btn btn-sm btn-outline-light border-0"><i class="bi bi-box-arrow-right"></i></button>
-    </div>
-  </div>
-</nav>
-<div class="container py-4 min-vh-100 bg-light">
+<!-- py-4 min-vh-100 bg-light -->
+<div class="main-content">
 
-  <!-- Carte de Solde (Style Vitale/Santé) -->
-  <div class="card border-0 rounded-4 shadow-lg mb-4 overflow-hidden position-relative"
-       style="background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);">
-    <div class="card-body p-4 text-white position-relative" style="z-index: 2;">
-      <div class="d-flex justify-content-between align-items-start mb-4">
-        <div>
-          <p class="text-white-50 small mb-0">Solde Disponible</p>
-          <h1 class="fw-bold mb-0 display-5">{{ currentBalance() | number:'1.0-0' }} <small class="fs-4">XAF</small></h1>
-        </div>
-        <!-- src="img/logo_v4.png" alt="Logo" -->
-        <img  class="mb-2 img_style">
-      </div>
-      <div class="d-flex justify-content-between align-items-end mt-5">
-        <div>
-          <p class="mb-0 fw-bold">{{ clientName }}</p>
-          <p class="text-white-50 small mb-0">ID: #{{ clientId }}</p>
-        </div>
-        <button (click)="onLogout()" class="btn btn-link text-white-50 p-0 border-0"><i class="bi bi-box-arrow-right h4"></i></button>
-      </div>
-    </div>
-    <!-- Décoration en arrière-plan -->
-    <div class="position-absolute top-0 end-0 p-5 opacity-10" style="transform: translate(20%, -20%);">
-      <i class="bi bi-shield-plus display-1"></i>
-    </div>
-  </div>
+  <!-- Navbar Patient/Pharmacien Moderne -->
+  <nav class="main-header navbar navbar-expand-lg navbar-dark bg-medipay-blue shadow-sm sticky-top">
+    <div class="container">
+      <!-- Logo & Titre -->
+      <a class="navbar-brand fw-bold d-flex align-items-center" href="#">
+        <!-- <i class="bi bi-heart-pulse-fill me-2 text-warning"></i> -->
+         <!-- Logo -->
+        <img src="img/logo_v5.png" class="img_style" alt="logo">
+        MediPay <span class="badge bg-warning text-white ms-2 small fw-normal">Patient</span>
+      </a>
 
-  <!-- Bouton d'action Scan -->
-  <div class="d-grid gap-2 mb-5">
-    <button (click)="isScanning = true" class="btn btn-medipay btn-lg py-3 rounded-4 shadow fw-bold">
-      <i class="bi bi-qr-code-scan me-2"></i> Scanner pour Payer
-    </button>
-  </div>
+      <!-- Menu Utilisateur (Dropdown) -->
+      <div class="dropdown">
+        <button class="btn d-flex align-items-center gap-2 p-1 border-0"
+                type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
 
-  <!-- Zone de Scan (S'affiche seulement si isScanning est vrai) -->
-  @if (isScanning) {
-    <div class="scanner-overlay animate__animated animate__fadeIn">
-      <div class="scanner-container bg-black p-3 rounded-4 shadow-lg text-center">
-        <h5 class="text-white mb-3">Alignez le QR Code</h5>
-        <zxing-scanner (scanSuccess)="onScanSuccess($event)" [formats]="allowedFormats"></zxing-scanner>
-        <button (click)="isScanning = false" class="btn btn-danger mt-3 rounded-pill px-4">Annuler</button>
-      </div>
-    </div>
-  }
+          <!-- Affichage Desktop : Badge complet -->
+          <div class="d-none d-md-flex align-items-center bg-white bg-opacity-10 rounded-pill px-3 py-1 border border-white border-opacity-25 hover-scale">
+            <i class="bi bi-person-circle me-2 text-warning"></i>
+            <span class="text-white small fw-bold">{{ clientName }}</span>
+            <i class="bi bi-chevron-down ms-2 text-white-50 small"></i>
+          </div>
 
-  <!-- Historique des Achats -->
-  <div class="card border-0 shadow-sm rounded-4">
-    <div class="card-body p-4">
-      <h5 class="fw-bold text-medipay-blue mb-4"><i class="bi bi-clock-history me-2"></i> Historique des Achats</h5>
-      <div class="list-group list-group-flush">
-        @for (tx of history(); track tx.id) {
-          <div class="list-group-item px-0 border-0 mb-3">
-            <div class="d-flex justify-content-between align-items-center">
-              <div class="d-flex align-items-center">
-                <div class="p-2 rounded-3 me-3"
-                     [ngClass]="tx.type === 'DEPOSIT' ? 'bg-success bg-opacity-10 text-success' : 'bg-primary bg-opacity-10 text-primary'">
-                  <i class="bi" [ngClass]="tx.type === 'DEPOSIT' ? 'bi-plus-circle' : 'bi-cart-plus'"></i>
-                </div>
-                <div>
-                  <p class="mb-0 fw-bold small">{{ tx.description }}</p>
-                  <p class="text-muted extra-small mb-0">{{ tx.timestamp | date:'dd MMM yyyy, HH:mm' }}</p>
-                </div>
+          <!-- Affichage Mobile : Icône Menu simple -->
+          <div class="d-md-none bg-white bg-opacity-10 rounded-circle p-2 border border-white border-opacity-25">
+            <i class="bi bi-list text-white h4 mb-0"></i>
+          </div>
+        </button>
+
+        <!-- Options du Menu -->
+        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 mt-2 animate__animated animate__fadeIn"
+            aria-labelledby="userMenu">
+
+          <!-- Info Utilisateur (Visible uniquement sur mobile dans le menu) -->
+          <li class="d-md-none px-3 py-2 border-bottom mb-2">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-person-circle h4 me-2 text-primary mb-0"></i>
+              <div>
+                <p class="mb-0 fw-bold small text-dark">{{ clientName }}</p>
+                <p class="mb-0 text-muted" style="font-size: 0.7rem;">Connecté en tant que Patient</p>
               </div>
-              <span class="fw-bold" [ngClass]="tx.type === 'DEPOSIT' ? 'text-success' : 'text-danger'">
-                {{ tx.type === 'DEPOSIT' ? '+' : '-' }}{{ tx.amount | number:'1.0-0' }}
-              </span>
+            </div>
+          </li>
+
+          <li>
+            <a class="dropdown-item d-flex align-items-center py-2" href="#">
+              <i class="bi bi-person me-2 text-muted"></i> Mon Profil
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item d-flex align-items-center py-2" href="#">
+              <i class="bi bi-gear me-2 text-muted"></i> Paramètres
+            </a>
+          </li>
+          <li><hr class="dropdown-divider"></li>
+          <li>
+            <button (click)="onLogout()" class="dropdown-item d-flex align-items-center py-2 text-danger fw-bold">
+              <i class="bi bi-box-arrow-right me-2"></i> Déconnexion
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container content-body py-4">
+    <!-- Carte de Solde (Style Vitale/Santé) -->
+    <div class="wallet-card position-relative overflow-hidden mb-4">
+
+      <div class="card-body p-4 text-white position-relative z-2">
+
+        <!-- TOP -->
+        <div class="d-flex justify-content-between align-items-start mb-4">
+
+          <!-- Solde -->
+          <div>
+            <p class="label mb-1">Solde disponible</p>
+
+            <div class="d-flex align-items-center gap-2">
+              <h1 class="fw-bold mb-0 display-6 balance-text">
+                {{ showBalance() ? (currentBalance() | number:'1.0-0') : '••••••' }}
+              </h1>
+              <span class="currency">XAF</span>
+
+              <!-- toggle -->
+              <button class="toggle-btn"
+                      (click)="toggleBalance()">
+                <i class="bi" [ngClass]="showBalance() ? 'bi-eye-slash' : 'bi-eye'"></i>
+              </button>
             </div>
           </div>
-        } @empty {
-          <div class="text-center py-5">
-            <i class="bi bi-receipt text-muted display-4 opacity-25"></i>
-            <p class="text-muted mt-2">Aucune transaction pour le moment</p>
+
+          <!-- Décoration en arrière-plan -->
+          <div class="position-absolute top-0 end-0 p-5 opacity-10" style="transform: translate(20%, -20%);">
+            <i class="bi bi-shield-plus display-1"></i>
           </div>
-        }
+
+        </div>
+
+        <!-- BOTTOM -->
+        <div class="d-flex justify-content-between align-items-end mt-4">
+
+          <!-- <div>
+            <p class="fw-semibold mb-0">{{ clientName }}</p>
+            <p class="sub-text mb-0">ID: #{{ clientId }}</p>
+          </div> -->
+
+          <!-- Badge statut -->
+          <span class="status-badge">Actif</span>
+
+        </div>
+
+      </div>
+
+      <!-- Effet décoratif -->
+      <div class="glow-circle"></div>
+
+    </div>
+
+    <!-- Bouton d'action Scan -->
+    <div class="d-grid gap-2 mb-5">
+      <button (click)="isScanning = true" class="btn btn-medipay btn-lg py-3 rounded-4 shadow fw-bold">
+        <i class="bi bi-qr-code-scan me-2"></i> Scanner pour Payer
+      </button>
+    </div>
+
+    <!-- Zone de Scan (S'affiche seulement si isScanning est vrai) -->
+    @if (isScanning) {
+      <div class="scanner-overlay animate__animated animate__fadeIn">
+        <div class="scanner-container bg-black p-3 rounded-4 shadow-lg text-center">
+          <h5 class="text-white mb-3">Alignez le QR Code</h5>
+          <zxing-scanner (scanSuccess)="onScanSuccess($event)" [formats]="allowedFormats"></zxing-scanner>
+          <button (click)="isScanning = false" class="btn btn-danger mt-3 rounded-pill px-4">Annuler</button>
+        </div>
+      </div>
+    }
+
+    <!-- Historique des Transactions -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+      <div class="card-header bg-white border-0 p-4 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold text-medipay-blue mb-0">Historique des Transactions</h5>
+        <button (click)="loadData()" class="btn btn-light btn-sm rounded-pill px-3">
+          <i class="bi bi-arrow-clockwise me-1"></i> Actualiser
+        </button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="bg-light">
+            <tr>
+              <th class="ps-4 border-0 small fw-bold text-muted">DATE</th>
+              <th class="border-0 small fw-bold text-muted">DESCRIPTION</th>
+              <th class="border-0 small fw-bold text-muted">TYPE</th>
+              <th class="text-end pe-4 border-0 small fw-bold text-muted">MONTANT</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (tx of history(); track tx.id) {
+              <tr>
+                <td class="ps-4">
+                  <div class="d-flex flex-column">
+                    <span class="fw-bold small">{{ tx.timestamp | date:'dd MMM yyyy' }}</span>
+                    <span class="text-muted x-small">{{ tx.timestamp | date:'HH:mm' }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="rounded-circle p-2 me-3" [ngClass]="tx.type === 'DEPOSIT' ? 'bg-success-subtle' : 'bg-primary-subtle'">
+                      <i class="bi" [ngClass]="tx.type === 'DEPOSIT' ? 'bi-cash-stack text-success' : 'bi-cart-plus text-primary'"></i>
+                    </div>
+                    <span class="small fw-bold">{{ tx.description || (tx.type === 'DEPOSIT' ? 'Dépôt Admin' : 'Paiement Pharmacie') }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge rounded-pill px-3 py-2"
+                        [ngClass]="tx.type === 'DEPOSIT' ? 'bg-success-subtle text-success' : 'bg-primary-subtle text-primary'">
+                    {{ tx.type }}
+                  </span>
+                </td>
+                <td class="text-end pe-4">
+                  <span class="fw-bold h6 mb-0" [ngClass]="tx.type === 'DEPOSIT' ? 'text-success' : 'text-dark'">
+                    {{ tx.type === 'DEPOSIT' ? '+' : '-' }} {{ tx.amount | number }} <small>XAF</small>
+                  </span>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4" class="text-center py-5 text-muted">
+                  <i class="bi bi-inbox display-4 d-block mb-3 opacity-25"></i>
+                  <p>Aucune transaction trouvée.</p>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
       </div>
     </div>
   </div>

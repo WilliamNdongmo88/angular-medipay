@@ -40,6 +40,8 @@ export class PharmacistDashboardComponent implements OnInit {
   isGeneratingStatic = false;
   recentSales = signal<any[]>([]);
 
+  showBalance = signal(true);
+
   constructor(
     private communicationService: CommunicationService,
     private notificationService: NotificationService
@@ -173,5 +175,9 @@ export class PharmacistDashboardComponent implements OnInit {
   onLogout() {
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  toggleBalance() {
+    this.showBalance.update(v => !v);
   }
 }
