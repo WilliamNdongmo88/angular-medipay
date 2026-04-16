@@ -1,3 +1,5 @@
+@use "sass:color";
+
 /* Couleurs MediPay */
 $medipay-orange: #E67E22;
 $medipay-black: #2C3E50;
@@ -28,7 +30,7 @@ $medipay-red: #fb0303;
     background-color: $medipay-orange !important; // Remplacer le vert par l'orange pour les pharmaciens
   }
   &.bg-primary {
-    background-color: lighten($medipay-orange, 20%) !important; // Une nuance d'orange plus claire pour les clients
+    background-color: color.adjust($medipay-orange, $lightness: 20%) !important;
   }
 }
 

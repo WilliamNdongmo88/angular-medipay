@@ -16,5 +16,11 @@ export class App {
 
   ngOnInit() {
     this.ws.connect(); // 🔥 UNE seule fois pour toute l'app
+
+    // 🔥 débloquer audio après premier clic
+    document.addEventListener('click', () => {
+      const audio = new Audio();
+      audio.play().catch(() => {});
+    }, { once: true });
   }
 }

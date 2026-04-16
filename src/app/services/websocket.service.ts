@@ -20,6 +20,9 @@ export class WebSocketService {
   userName = signal<string | null>(null);
   userId: number | null = null;
 
+  private lastSoundTime = 0;
+  private notificationSound = new Audio('sounds/notification.mp3');
+
   private wsUrl: string | undefined;
   private isProd = environment.production;
 
@@ -119,6 +122,9 @@ export class WebSocketService {
     console.log("🔔 User ID ciblé :", data.receiverId, " | Type :", data.type);
     console.log("🔔 User ID actuel :", this.userId);
 
+    // 🔊 jouer le son
+    this.playSound();
+
     // 🔥 déclenche directement le toast global
     if (data?.type === 'DEPOSIT' && Number(data.receiverId) === this.userId) {
       this.notificationService.show({
@@ -137,6 +143,29 @@ export class WebSocketService {
     // (optionnel si tu veux garder communicationService)
     this.communicationService.triggerSenderAction(data);
   }
+
+  private playSound() {
+    try {
+      this.notificationSound.currentTime = 0;
+      this.notificationSound.play().catch(err => {
+        console.warn('🔇 Son bloqué par le navigateur:', err);
+      });
+    } catch (e) {
+      console.error('Erreur audio:', e);
+    }
+  }
+
+  // private playSound() {
+  //   const now = Date.now();
+
+  //   // éviter spam (< 1s)
+  //   if (now - this.lastSoundTime < 1000) return;
+
+  //   this.lastSoundTime = now;
+
+  //   this.notificationSound.currentTime = 0;
+  //   this.notificationSound.play().catch(() => {});
+  // }
 
   disconnect() {
     this.stompClient.deactivate();
