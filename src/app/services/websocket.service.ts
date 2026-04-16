@@ -55,68 +55,66 @@ export class WebSocketService {
     this.stompClient.onConnect = () => {
       console.log('✅ WebSocket connecté');
 
-      this.subscribeTopics();
+      // WebSocket pour les transactions
+      this.stompClient.subscribe('/topic/transactions', (message) => {
+        const payload = JSON.parse(message.body);
+
+        const transactions: Transaction[] = Array.isArray(payload)
+          ? payload
+          : [payload];
+
+        this.transactions.update(list => {
+          let updatedList = [...list];
+
+          transactions.forEach(tx => {
+            const index = updatedList.findIndex(t => t.id === tx.id);
+
+            if (index !== -1) {
+              updatedList[index] = tx; // update
+            } else {
+              updatedList.unshift(tx); // add
+            }
+          });
+          console.log('🔄 Transactions mises à jour:', updatedList);
+          return updatedList;
+        });
+      });
+
+      // WebSocket pour les utilisateurs
+      this.stompClient.subscribe('/topic/users', (message) => {
+        const users: User[] = JSON.parse(message.body);
+        console.log('📩 Users reçus:', users);
+
+        this.users.update(list => {
+          let updatedList = [...list];
+
+          users.forEach(user => {
+            const index = updatedList.findIndex(u => u.id === user.id);
+
+            if (index !== -1) {
+              // 🔁 UPDATE user existant
+              updatedList[index] = user;
+            } else {
+              // ➕ AJOUT nouveau user
+              updatedList.unshift(user);
+            }
+          });
+          console.log('🔄 Liste mise à jour:', updatedList);
+          return updatedList;
+        });
+      });
+
+      // S'abonner aux notifications privées de l'utilisateur
+      this.stompClient.subscribe(`/topic/notifications`, (notification: any) => {
+        const data : any[] = JSON.parse(notification.body);
+        console.log('🔔 Notification reçue:', data);
+        this.showToast(data);
+      });
+
+      // this.subscribeTopics();
     };
 
     this.stompClient.activate();
-  }
-
-  private subscribeTopics(){
-    // WebSocket pour les transactions
-    this.stompClient.subscribe('/topic/transactions', (message) => {
-      const payload = JSON.parse(message.body);
-
-      const transactions: Transaction[] = Array.isArray(payload)
-        ? payload
-        : [payload];
-
-      this.transactions.update(list => {
-        let updatedList = [...list];
-
-        transactions.forEach(tx => {
-          const index = updatedList.findIndex(t => t.id === tx.id);
-
-          if (index !== -1) {
-            updatedList[index] = tx; // update
-          } else {
-            updatedList.unshift(tx); // add
-          }
-        });
-        console.log('🔄 Transactions mises à jour:', updatedList);
-        return updatedList;
-      });
-    });
-
-    // WebSocket pour les utilisateurs
-    this.stompClient.subscribe('/topic/users', (message) => {
-      const users: User[] = JSON.parse(message.body);
-      console.log('📩 Users reçus:', users);
-
-      this.users.update(list => {
-        let updatedList = [...list];
-
-        users.forEach(user => {
-          const index = updatedList.findIndex(u => u.id === user.id);
-
-          if (index !== -1) {
-            // 🔁 UPDATE user existant
-            updatedList[index] = user;
-          } else {
-            // ➕ AJOUT nouveau user
-            updatedList.unshift(user);
-          }
-        });
-        console.log('🔄 Liste mise à jour:', updatedList);
-        return updatedList;
-      });
-    });
-
-    // S'abonner aux notifications privées de l'utilisateur
-    this.stompClient.subscribe(`/topic/notifications`, (notification: any) => {
-      const data : any[] = JSON.parse(notification.body);
-      console.log('🔔 Notification reçue:', data);
-      this.showToast(data);
-    });
   }
 
   private showToast(data: any) {
