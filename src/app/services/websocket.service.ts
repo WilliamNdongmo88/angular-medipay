@@ -20,7 +20,6 @@ export class WebSocketService {
   userName = signal<string | null>(null);
   userId: number | null = null;
 
-  private lastSoundTime = 0;
   private notificationSound = new Audio('sounds/notification.mp3');
 
   private wsUrl: string;
@@ -162,18 +161,6 @@ export class WebSocketService {
       console.error('Erreur audio:', e);
     }
   }
-
-  // private playSound() {
-  //   const now = Date.now();
-
-  //   // éviter spam (< 1s)
-  //   if (now - this.lastSoundTime < 1000) return;
-
-  //   this.lastSoundTime = now;
-
-  //   this.notificationSound.currentTime = 0;
-  //   this.notificationSound.play().catch(() => {});
-  // }
 
   disconnect() {
     this.stompClient.deactivate();
