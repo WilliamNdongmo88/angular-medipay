@@ -25,8 +25,6 @@ export class WebSocketService {
   private wsUrl: string;
   private isProd = environment.production;
 
-  private connected = false;
-
   constructor(
     private communicationService: CommunicationService,
     private notificationService: NotificationService,
@@ -56,8 +54,6 @@ export class WebSocketService {
 
     this.stompClient.onConnect = () => {
       console.log('✅ WebSocket connecté');
-
-      this.connected = true;
 
       this.subscribeTopics();
     };
