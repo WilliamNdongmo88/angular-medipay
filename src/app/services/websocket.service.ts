@@ -23,7 +23,7 @@ export class WebSocketService {
   private lastSoundTime = 0;
   private notificationSound = new Audio('sounds/notification.mp3');
 
-  private wsUrl: string | undefined;
+  private wsUrl: string;
   private isProd = environment.production;
 
   constructor(
@@ -47,7 +47,8 @@ export class WebSocketService {
 
   connect() {
     this.stompClient = new Client({
-      brokerURL: this.wsUrl,
+      //brokerURL: this.wsUrl,
+      webSocketFactory: () => new SockJS(this.wsUrl.replace('wss', 'https')),
       //webSocketFactory: () => new SockJS(this.wsUrl),
       reconnectDelay: 5000
     });
