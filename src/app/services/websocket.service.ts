@@ -123,17 +123,20 @@ export class WebSocketService {
     console.log("🔔 User ID ciblé :", data.receiverId, " | Type :", data.type);
     console.log("🔔 User ID actuel :", this.userId);
 
-    // 🔊 jouer le son
-    this.playSound();
-
     // 🔥 déclenche directement le toast global
     if (data?.type === 'DEPOSIT' && Number(data.receiverId) === this.userId) {
+
+      this.playSound(); // 🔊 jouer le son de notification
+
       this.notificationService.show({
         type: data.type,
         message: data.message,
         senderName: data.senderName
       });
     }else if (data?.type === 'PAYMENT' && Number(data.receiverId) === this.userId) {
+
+      this.playSound(); // 🔊 jouer le son de notification
+
       this.notificationService.show({
         type: data.type,
         message: data.message,

@@ -34,6 +34,7 @@ export class App {
       document.removeEventListener('touchstart', unlock);
     };
 
+    // 🔥 débloquer audio automatiquement
     document.addEventListener('click', unlock);
     document.addEventListener('touchstart', unlock);
   }

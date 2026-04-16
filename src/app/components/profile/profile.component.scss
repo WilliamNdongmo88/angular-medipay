@@ -92,7 +92,7 @@ $medipay-red: #fb0303;
 .content-body {
   flex-grow: 1; /* Prend tout l'espace restant sous le header */
   overflow-y: auto; /* Active le scroll uniquement ici */
-  //margin: 0px 20px 0px 20px;
+  height: 50vh;
   scroll-behavior: smooth;
 }
 
