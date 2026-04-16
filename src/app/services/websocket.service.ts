@@ -47,8 +47,8 @@ export class WebSocketService {
 
   connect() {
     this.stompClient = new Client({
-      //brokerURL: this.wsUrl,
-      webSocketFactory: () => new SockJS(this.wsUrl.replace('wss', 'https')),
+      brokerURL: this.wsUrl,
+      //webSocketFactory: () => new SockJS(this.wsUrl.replace('wss', 'https')),
       //webSocketFactory: () => new SockJS(this.wsUrl),
       reconnectDelay: 5000
     });
