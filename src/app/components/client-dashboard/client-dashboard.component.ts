@@ -142,7 +142,12 @@ export class ClientDashboardComponent implements OnInit {
     }
   }
 
-    openPaymentModal(pharmacistId: number, pharmacistName: string) {
+  onScanCancel() {
+    console.log('Scan annulé');
+    this.isScanning.set(false);
+  }
+
+  openPaymentModal(pharmacistId: number, pharmacistName: string) {
     this.pharmacistId = pharmacistId;
     this.pharmacistName = pharmacistName;
     this.amount = null; // Réinitialiser le montant
