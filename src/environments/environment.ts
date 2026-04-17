@@ -7,7 +7,7 @@ export const environment = {
 };
 
 if (environment.production) {
-  console.log("✅ Environment de Prduction chargé !");
+  console.log("✅ Environment de Production chargé !");
 }else{
   console.log("✅ Environment de Développement chargé !");
 }
