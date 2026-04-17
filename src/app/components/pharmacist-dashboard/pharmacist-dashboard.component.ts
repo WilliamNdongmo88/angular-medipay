@@ -117,8 +117,8 @@ export class PharmacistDashboardComponent implements OnInit {
 
     this.http.post<any>(`${this.apiUrl}/qrcode/generate`, request ).subscribe({
       next: (res) => {
-        console.log('QR Code généré:', res.qrCodeValue());
-        this.qrCodeValue.set(res.qrCodeValue());
+        console.log('QR Code généré:', res.qrCodeValue);
+        this.qrCodeValue.set(res.qrCodeValue);
         this.isGeneratingDynamic = false;
       },
       error: () => {
