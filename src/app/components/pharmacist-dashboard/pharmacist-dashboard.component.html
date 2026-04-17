@@ -113,7 +113,7 @@
             <div class="input-group input-group-lg">
               <span class="input-group-text bg-light border-end-0 text-medipay-orange fw-bold">XAF</span>
               <input type="number" class="form-control bg-light border-start-0 fw-bold"
-                    [(ngModel)]="paymentAmount" placeholder="0" (input)="qrCodeValue = ''">
+                    [(ngModel)]="paymentAmount" placeholder="0" (input)="qrCodeValue.set('')">
             </div>
           </div>
 
@@ -129,12 +129,12 @@
           </button>
 
           <!-- Zone d'affichage du QR Code -->
-          @if (qrCodeValue) {
+          @if (qrCodeValue()) {
             <div class="text-center p-4 bg-light rounded-4 border border-dashed animate__animated animate__fadeIn">
               <p class="text-muted small mb-3">Faites scanner ce code au patient</p>
               <!-- Note: Utiliser une lib comme ngx-kjua ou simplement afficher l'image du QR -->
               <div class="qr-placeholder bg-white p-3 d-inline-block shadow-sm rounded-3 mb-3">
-                <img [src]="'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + qrCodeValue" alt="QR Code">
+                <img [src]="'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + qrCodeValue()" alt="QR Code">
               </div>
               <h5 class="fw-bold text-medipay-orange">{{ paymentAmount }} XAF</h5>
               <div class="mt-2">
