@@ -1,5 +1,5 @@
 export const environment = {
-  production: false, // Change to true to activate production environment
+  production: true, // Change to true to activate production environment
   apiUrlDev: 'http://localhost:8008/api',
   brokerURLDev: 'ws://localhost:8008/ws',
   brokerURLProd: 'wss://medipay-production.up.railway.app/ws',
