@@ -38,7 +38,7 @@ export class ClientDashboardComponent implements OnInit {
   clientName = '';
   clientId = 0;
   currentBalance = signal<number>(0);
-  isScanning = false;
+  isScanning = signal(false);
   history = signal<any[]>([]);
   allowedFormats = [ BarcodeFormat.QR_CODE ];
   showBalance = signal(true);
@@ -111,7 +111,7 @@ export class ClientDashboardComponent implements OnInit {
   }
 
   onScanSuccess(qrCodeValue: string) {
-    this.isScanning = false;
+    this.isScanning.set(false);
     console.log('QR Code Scanné:', qrCodeValue);
     if (qrCodeValue.startsWith('medipay://pay')) {
       console.log('Redirection vers la page de paiement...');

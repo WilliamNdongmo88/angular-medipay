@@ -122,18 +122,18 @@
 
     <!-- Bouton d'action Scan -->
     <div class="d-grid gap-2 mb-5">
-      <button (click)="isScanning = true" class="btn btn-medipay btn-lg py-3 rounded-4 shadow fw-bold">
+      <button (click)="isScanning.set(true)" class="btn btn-medipay btn-lg py-3 rounded-4 shadow fw-bold">
         <i class="bi bi-qr-code-scan me-2"></i> Scanner pour Payer
       </button>
     </div>
 
     <!-- Zone de Scan (S'affiche seulement si isScanning est vrai) -->
-    @if (isScanning) {
+    @if (isScanning()) {
       <div class="scanner-overlay animate__animated animate__fadeIn">
         <div class="scanner-container bg-black p-3 rounded-4 shadow-lg text-center">
           <h5 class="text-white mb-3">Alignez le QR Code</h5>
           <zxing-scanner (scanSuccess)="onScanSuccess($event)" [formats]="allowedFormats"></zxing-scanner>
-          <button (click)="isScanning = false" class="btn btn-danger mt-3 rounded-pill px-4">Annuler</button>
+          <button (click)="isScanning.set(false)" class="btn btn-danger mt-3 rounded-pill px-4">Annuler</button>
         </div>
       </div>
     }
