@@ -133,7 +133,7 @@
         <div class="scanner-container bg-black p-3 rounded-4 shadow-lg text-center">
           <h5 class="text-white mb-3">Alignez le QR Code</h5>
           <zxing-scanner (scanSuccess)="onScanSuccess($event)" [formats]="allowedFormats"></zxing-scanner>
-          <button (click)="isScanning.set(false)" class="btn btn-danger mt-3 rounded-pill px-4">Annuler</button>
+          <button (click)="onScanCancel()" class="btn btn-danger mt-3 rounded-pill px-4">Annuler</button>
         </div>
       </div>
     }
